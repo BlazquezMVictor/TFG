@@ -1,37 +1,22 @@
+from translator_utils import Operations, DictionaryKeyShortcuts, Utils
+
 class Translator():
     def __init__(self):
-        
-        self.translated_code_info = {
-            self.keys.trans_code_info.QUBITS:       {"amount": 0, "lines": []},
-            self.keys.trans_code_info.BITS:         {"amount": 0, "lines": []},
-            self.keys.trans_code_info.CUSTOM_GATES: {"amount": 0, "lines": []},
-            self.keys.trans_code_info.INSTRUCTIONS: {"amount": 0, "lines": []},
-            self.keys.trans_code_info.VARS_REF:     {}
-        }
+        self.ops = Operations()
+        self.keys = DictionaryKeyShortcuts()
+        self.utils = Utils()
 
-    def translate_qubit(self, pending_words, extra_info):
-        amount_qubits = 1
-        if extra_info != "":
-            amount_qubits = int(extra_info[1:-1])   # Remove square brackets
-
-        var_id = pending_words[0][:-1]
-
-        self.translated_code_info[self.keys.trans_code_info.QUBITS]["amount"] += amount_qubits
-        self.translated_code_info[self.keys.trans_code_info.QUBITS]["lines"].append(f"QRegistry({amount_qubits}) {var_id}")
-        self.translated_code_info[self.keys.trans_code_info.VARS_REF][var_id] = var_id
-
-
-    def translate_data_type(self, data_type, pending_words, extra_info=""):
-        method_name = self.data_types[data_type]
+    def translate_data_type(self, index_line, data_type, pending_words, extra_info=""):
+        method_name = self.utils.data_types[data_type]
         try:
-            method = getattr(self, method_name)
+            method = getattr(self.utils, method_name)
         except:
-            raise Exception("NO SUCH METHOD WITHIN 'translator' CLASS")
+            raise Exception("NO SUCH METHOD WITHIN 'Utils' CLASS")
         
-        method(pending_words, extra_info)
+        method(index_line, pending_words, extra_info)
 
 
-    def evaluate_beginning(self, beginnig:str, pending_words:list[str]):
+    def evaluate_beginning(self, index_line, beginnig:str, pending_words:list[str]):
         operation = ""
         stop_index = 0
 
@@ -47,7 +32,7 @@ class Translator():
         except:
             extra_info = ""
 
-        operation_type = self.line_operation[operation]
+        operation_type = self.utils.line_operation[operation]
 
         match(operation_type):
             #  caseself.ops.SPECIAL_CHAR:
@@ -57,7 +42,7 @@ class Translator():
             #     continue
             
             case self.ops.DATA_TYPE:
-                self.translate_data_type(data_type=operation, pending_words=pending_words, extra_info=extra_info)
+                self.translate_data_type(index_line=index_line, data_type=operation, pending_words=pending_words, extra_info=extra_info)
             
             #  caseself.ops.BUILTIN_CONSTANT:
             #     pass
@@ -78,16 +63,18 @@ class Translator():
 
     def translate(self, code:str):
         code_lines = code.split("\n")
+        index_line = -1
 
         for line in code_lines:
             words = line.split(" ")
             beginning = words[0]
+            index_line += 1
             
             try:
-                operation = self.line_operation[beginning]
+                operation = self.utils.line_operation[beginning]
 
             except:
-                self.evaluate_beginning(beginnig=beginning, pending_words=words[1:])
+                self.evaluate_beginning(index_line=index_line, beginnig=beginning, pending_words=words[1:])
                 continue
 
             match(operation):
@@ -98,7 +85,7 @@ class Translator():
                     continue
                 
                 case self.ops.DATA_TYPE:
-                    self.translate_data_type(data_type=beginning, pending_words=words[1:])
+                    self.translate_data_type(index_line=index_line, data_type=beginning, pending_words=words[1:])
                 
                 case self.ops.BUILTIN_CONSTANT:
                     pass
@@ -140,19 +127,16 @@ if __name__ == "__main__":
         c2 = measure q[2];
     '''
 
-    code1 = "qubit[3] q;"
+    code1 = '''float my_machine_float = 2.3;'''
     
     translator = Translator()
     translator.translate(code1)
 
-    for info in translator.translated_code_info.values():
+    for info in translator.utils.translated_code_info.values():
         print(info)
     
     print()
     print("TRANSLATED CODE:")
     
-    for key in translator.translated_code_info.keys():
-        if key != translator.keys.trans_code_info.VARS_REF:
-            lines = translator.translated_code_info[key]["lines"]
-            for line in lines:
-                print(line)
+    for line in translator.utils.translated_code:
+        print(line)
