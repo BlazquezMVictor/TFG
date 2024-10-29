@@ -6,76 +6,33 @@ class Translator():
         self.keys = DictionaryKeyShortcuts()
         self.utils = Utils()
 
-    def translate_data_type(self, index_line, data_type, pending_words, extra_info=""):
-        method_name = self.utils.data_types[data_type]
-        try:
-            method = getattr(self.utils, method_name)
-        except:
-            raise Exception("NO SUCH METHOD WITHIN 'Utils' CLASS")
+    def translate_data_type(self, index_line, operation, line):
+        method_name = self.utils.data_types[operation]
         
-        method(index_line, pending_words, extra_info)
-
-
-    def evaluate_beginning(self, index_line, beginnig:str, pending_words:list[str]):
-        operation = ""
-        stop_index = 0
-
-        for char in beginnig:
-            if not char.isalnum():
-                break
-
-            operation += char
-            stop_index += 1
-
-        try:
-            extra_info = beginnig[stop_index:]
-        except:
-            extra_info = ""
-
-        operation_type = self.utils.line_operation[operation]
-
-        match(operation_type):
-            #  caseself.ops.SPECIAL_CHAR:
-            #     pass
-            
-            #  caseself.ops.COMMENTS:
-            #     continue
-            
-            case self.ops.DATA_TYPE:
-                self.translate_data_type(index_line=index_line, data_type=operation, pending_words=pending_words, extra_info=extra_info)
-            
-            #  caseself.ops.BUILTIN_CONSTANT:
-            #     pass
-            
-            case self.ops.BUILTIN_FUNCTION:
-                pass
-            
-            case self.ops.STD_GATE:
-                pass
-            
-            case self.ops.GATE_OPERATION:
-                pass
-
-            case _:
-                # Check if we are modifying a variable
-                if operation in self.translated_vars_ref:
-                    pass
+        try:        method = getattr(self.utils, method_name)
+        except:     raise Exception("NO SUCH METHOD WITHIN 'Utils' CLASS")
+        
+        method(index_line, operation, line)
 
     def translate(self, code:str):
         code_lines = code.split("\n")
         index_line = -1
 
         for line in code_lines:
-            words = line.split(" ")
-            beginning = words[0]
             index_line += 1
-            
-            try:
-                operation = self.utils.line_operation[beginning]
+            index_char = 0
 
-            except:
-                self.evaluate_beginning(index_line=index_line, beginnig=beginning, pending_words=words[1:])
-                continue
+            word = ""
+            for char in line:
+                if char in self.utils.special_chars:
+                    new_line = line[index_char:]
+                    break
+
+                word += char
+                index_char += 1
+            
+            try:        operation = self.utils.line_operation[word]
+            except:     raise Exception("Unkown operation " + operation)
 
             match(operation):
                 case self.ops.SPECIAL_CHAR:
@@ -85,7 +42,7 @@ class Translator():
                     continue
                 
                 case self.ops.DATA_TYPE:
-                    self.translate_data_type(index_line=index_line, data_type=beginning, pending_words=words[1:])
+                    self.translate_data_type(index_line=index_line, operation=operation, line=new_line)
                 
                 case self.ops.BUILTIN_CONSTANT:
                     pass

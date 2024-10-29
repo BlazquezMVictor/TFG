@@ -3,12 +3,13 @@ import numpy as np
 class Operations():
     def __init__(self):
         self.SPECIAL_CHAR = 0
-        self.COMMENTS = 1
-        self.DATA_TYPE = 2
-        self.BUILTIN_CONSTANT = 3
-        self.BUILTIN_FUNCTION = 4
-        self.STD_GATE = 5
-        self.GATE_OPERATION = 6
+        self.MATH_OPERATOR = 1
+        self.COMMENTS = 2
+        self.DATA_TYPE = 3
+        self.BUILTIN_CONSTANT = 4
+        self.BUILTIN_FUNCTION = 5
+        self.STD_GATE = 6
+        self.GATE_OPERATION = 7
 
 class TranslatedCodeInfo():
     def __init__(self):
@@ -125,6 +126,8 @@ class Utils():
             "]": self.ops.SPECIAL_CHAR,
             "{": self.ops.SPECIAL_CHAR,
             "}": self.ops.SPECIAL_CHAR,
+            "=": self.ops.SPECIAL_CHAR,
+            " ": self.ops.SPECIAL_CHAR,
 
             "//": self.ops.COMMENTS,
             "/*": self.ops.COMMENTS,
@@ -145,8 +148,12 @@ class Utils():
             "let": self.ops.DATA_TYPE,
 
             "pi": self.ops.BUILTIN_CONSTANT,
+            "π": self.ops.BUILTIN_CONSTANT,
             "tau": self.ops.BUILTIN_CONSTANT,
+            "τ": self.ops.BUILTIN_CONSTANT,
             "euler": self.ops.BUILTIN_CONSTANT,
+            "ℇ": self.ops.BUILTIN_CONSTANT,
+            "im": self.ops.BUILTIN_CONSTANT,
 
             "arcos": self.ops.BUILTIN_FUNCTION,
             "arsin": self.ops.BUILTIN_FUNCTION,
@@ -168,6 +175,8 @@ class Utils():
             "reset": self.ops.BUILTIN_FUNCTION,
             "measure": self.ops.BUILTIN_FUNCTION,
             "barrier": self.ops.BUILTIN_FUNCTION,
+            "real": self.ops.BUILTIN_FUNCTION,
+            "imag": self.ops.BUILTIN_FUNCTION,
 
             "p": self.ops.STD_GATE,
             "x": self.ops.STD_GATE,
@@ -222,23 +231,19 @@ class Utils():
         pass
 
     # DATA TYPES TRANSLATIONS
-    def translate_qubit(self, index_line, pending_words, extra_info):
+    def translate_qubit(self, index_line, operation, line):
         '''
-        UC1:
+        UCs:
         qubit[3] my_var;
-
-        index_line = whichever
-        pending_words = [q;]
-        extra_info = [3]
         '''
 
         # Get qubit amount
         amount_qubits = 1
-        if extra_info != "":
-            amount_qubits = int(extra_info[1:-1])   # Remove square brackets
+        if line != "":
+            amount_qubits = int(line[1:-1])   # Remove square brackets
 
         # Get var ID
-        var_id = pending_words[0][:-1]
+        var_id = operation[0][:-1]
 
         # Translate the line
         translated_line = f"QRegistry({amount_qubits}) {var_id}"
@@ -249,37 +254,29 @@ class Utils():
         self.translated_code_info[self.keys.trans_code_info.VARS_REF][var_id] = var_id
         self.translated_code.append(translated_line)
 
-    def translate_bit(self, index_line, pending_words, extra_info):
+    def translate_bit(self, index_line, operation, line):
         '''
-        UC1:
+        UCs:
         bit[8] my_var;
-
-        pending_words = [b;]
-        extra_info = "[8]"
-
-        UC2:
         bit[8] my_var = "00001111";
-
-        pending_words = [b, =, 00001111;]
-        extra_info = "[8]"
         '''
 
         # Get amount of bits
         amount_bits = 1
-        if extra_info != "":
-            amount_bits = int(extra_info[1:-1])   # Remove square brackets
+        if line != "":
+            amount_bits = int(line[1:-1])   # Remove square brackets
 
         # Check in which UC we are
-        amount_pending_words = len(pending_words)
+        amount_operation = len(operation)
         # No value assignation
-        if amount_pending_words == 1:
-            var_id = pending_words[0][:-1]
+        if amount_operation == 1:
+            var_id = operation[0][:-1]
             value = [0 for i in range(amount_bits)]
 
         # Value assignation
-        elif amount_pending_words > 1:
-            var_id = pending_words[0]
-            value = [char for char in pending_words[2][1:-2]]
+        elif amount_operation > 1:
+            var_id = operation[0]
+            value = [char for char in operation[2][1:-2]]
 
         # Translate the line
         translated_line = f"{var_id} = {value}"
@@ -290,41 +287,29 @@ class Utils():
         self.translated_code_info[self.keys.trans_code_info.VARS_REF][var_id] = var_id
         self.translated_code.append(translated_line)
 
-    def translate_int(self, index_line, pending_words, extra_info):
+    def translate_int(self, index_line, operation, line):
         '''
-        UC1:
+        UCs:
         uint/int[16] my_var = 10;
-
-        pending_words = [my_var, =, 10;]
-        extra_info = "[16]"
-
-        UC2:
         uint/int[16] my_var;
-
-        pending_words = [my_var;]
-        extra_info = "[16]"
-
-        UC3:
+        uint/int my_var = 10;
         uint/int my_var;
-
-        pending_words = [my_var;]
-        extra_info = ""
         '''
 
-        if extra_info != "":
-            amount_int_bits = int(extra_info[1:-1])   # Remove square brackets
+        if line != "":
+            amount_int_bits = int(line[1:-1])   # Remove square brackets
 
          # Check in which UC we are
-        amount_pending_words = len(pending_words)
+        amount_operation = len(operation)
         # No value assignation
-        if amount_pending_words == 1:
-            var_id = pending_words[0][:-1]
+        if amount_operation == 1:
+            var_id = operation[0][:-1]
             value = ""
 
         # Value assignation
-        elif amount_pending_words > 1:
-            var_id = pending_words[0]
-            value = f" = {pending_words[2][:-1]}"
+        elif amount_operation > 1:
+            var_id = operation[0]
+            value = f" = {operation[2][:-1]}"
 
         # Translate the line
         translated_line = f"{var_id}: int{value}"
@@ -335,41 +320,29 @@ class Utils():
         self.translated_code_info[self.keys.trans_code_info.VARS_REF][var_id] = var_id
         self.translated_code.append(translated_line)
 
-    def translate_float(self, index_line, pending_words, extra_info):
+    def translate_float(self, index_line, operation, line):
         '''
-        UC1:
+        UCs:
         float[16] my_var = π;
-
-        pending_words = [my_var, =, π;]
-        extra_info = "[16]"
-
-        UC2:
         float[16] my_var;
-
-        pending_words = [my_var;]
-        extra_info = "[16]"
-
-        UC3:
+        float my_var = 2.3;
         float my_var;
-
-        pending_words = [my_var;]
-        extra_info = ""
         '''
 
-        if extra_info != "":
-            amount_float_bits = int(extra_info[1:-1])   # Remove square brackets
+        if line != "":
+            amount_float_bits = int(line[1:-1])   # Remove square brackets
 
          # Check in which UC we are
-        amount_pending_words = len(pending_words)
+        amount_operation = len(operation)
         # No value assignation
-        if amount_pending_words == 1:
-            var_id = pending_words[0][:-1]
+        if amount_operation == 1:
+            var_id = operation[0][:-1]
             value = ""
 
         # Value assignation
-        elif amount_pending_words > 1:
-            var_id = pending_words[0]
-            value = pending_words[2][:-1]
+        elif amount_operation > 1:
+            var_id = operation[0]
+            value = operation[2][:-1]
             if value in self.builtin_constants:     value = f" = {self.builtin_constants[value]}"
             else:                                   value = f" = {value}"
 
@@ -382,26 +355,26 @@ class Utils():
         self.translated_code_info[self.keys.trans_code_info.VARS_REF][var_id] = var_id
         self.translated_code.append(translated_line)
 
-    def translate_angle(self, index_line, pending_words, extra_info):
+    def translate_angle(self, index_line, operation, line):
         pass
 
-    def translate_complex(self, index_line, pending_words, extra_info):
+    def translate_complex(self, index_line, operation, line):
         pass
 
-    def translate_bool(self, index_line, pending_words, extra_info):
+    def translate_bool(self, index_line, operation, line):
         pass
 
-    def translate_const(self, index_line, pending_words, extra_info):
+    def translate_const(self, index_line, operation, line):
         pass
 
-    def translate_duration(self, index_line, pending_words, extra_info):
+    def translate_duration(self, index_line, operation, line):
         pass
 
-    def translate_array(self, index_line, pending_words, extra_info):
+    def translate_array(self, index_line, operation, line):
         pass
 
-    def translate_strech(self, index_line, pending_words, extra_info):
+    def translate_strech(self, index_line, operation, line):
         pass
 
-    def translate_let(self, index_line, pending_words, extra_info):
+    def translate_let(self, index_line, operation, line):
         pass
