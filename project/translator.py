@@ -6,13 +6,13 @@ class Translator():
         self.keys = DictionaryKeyShortcuts()
         self.utils = Utils()
 
-    def translate_data_type(self, index_line, operation, line):
-        method_name = self.utils.data_types[operation]
+    def translate_data_type(self, index_line, data_type, line):
+        method_name = self.utils.data_types[data_type]
         
         try:        method = getattr(self.utils, method_name)
         except:     raise Exception("NO SUCH METHOD WITHIN 'Utils' CLASS")
         
-        method(index_line, operation, line)
+        method(index_line, line)
 
     def translate(self, code:str):
         code_lines = code.split("\n")
@@ -31,8 +31,8 @@ class Translator():
                 word += char
                 index_char += 1
             
-            try:        operation = self.utils.line_operation[word]
-            except:     raise Exception("Unkown operation " + operation)
+            try:        operation = self.utils.operation[word]
+            except:     raise Exception("Unknown operation " + word)
 
             match(operation):
                 case self.ops.SPECIAL_CHAR:
@@ -42,7 +42,7 @@ class Translator():
                     continue
                 
                 case self.ops.DATA_TYPE:
-                    self.translate_data_type(index_line=index_line, operation=operation, line=new_line)
+                    self.translate_data_type(index_line=index_line, data_type=word, line=new_line)
                 
                 case self.ops.BUILTIN_CONSTANT:
                     pass
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         c2 = measure q[2];
     '''
 
-    code1 = '''float my_machine_float = 2.3;'''
+    code1 = '''int my_var;'''
     
     translator = Translator()
     translator.translate(code1)
