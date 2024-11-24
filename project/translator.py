@@ -84,7 +84,7 @@ if __name__ == "__main__":
         c2 = measure q[2];
     '''
 
-    code1 = '''int my_var;'''
+    code1 = '''complex[float] d = int[4](2.0) - (5 + sin(pi/2)) + (my_var * 5.5 im);'''
     
     translator = Translator()
     translator.translate(code1)

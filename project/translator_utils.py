@@ -52,37 +52,39 @@ class Utils():
 
         }
         self.builtin_constants = {
-            "pi": np.pi,
-            "π": np.pi,
-            "tau": np.pi*2,
-            "τ": np.pi*2,
-            "euler": np.e,
-            "ℇ": np.e,
-            "im": 1j
+            "pi": "np.pi",
+            "π": "np.pi",
+            "tau": "np.pi*2",
+            "τ": "np.pi*2",
+            "euler": "np.e",
+            "ℇ": "np.e",
+            "im": "1j"
         }
         self.builtin_functions = {
-            "arcos",
-            "arsin",
-            "arctan",
-            "ceiling",
-            "cos",
-            "exp",
-            "floor",
-            "log",
-            "mod",
-            "popcount",
-            "pow",
-            "rotl",
-            "rotr",
-            "sin",
-            "sqrt",
-            "tan",
-            "gate",
-            "reset",
-            "measure",
-            "barrier",
-            "real",
-            "imag"
+            "arcos": "np.arccos",
+            "arsin": "np.arcsin",
+            "arctan": "np.arctan",
+            "ceiling": "np.ceil",
+            "cos": "np.cos",
+            "exp": "np.exp",
+            "floor": "np.floor",
+            "log": "np.log",
+            "mod": "np.mod",
+            "popcount": "np.count_nonzero",
+            "pow": "np.power",
+            "rotl": "translator.utils.rotl",
+            "rotr": "translator.utils.rotr",
+            "sin": "np.sin",
+            "sqrt": "np.sqrt",
+            "tan": "np.tan",
+            # TODO
+            # Translate this functions
+            # "gate",
+            # "reset",
+            # "measure",
+            # "barrier",
+            # "real",
+            # "imag"
         }
         self.std_gates = {
             "p",
@@ -219,26 +221,21 @@ class Utils():
         }
         self.translated_code = []
 
-    def translate_internal_expr(self, expression):
-        internal_expr = ""
-        index_char = 0
-        start_reading = False
+    def rotl(self, array, distance):
+        for i in range(distance):
+            first = array.pop(0)
+            array.append(first)
 
-        for char in expression:
-            if char == ")":
-                index_char += 1
-                return self.translate_expression(internal_expr), index_char
-            
-            if start_reading:
-                internal_expr += char
+        return array
+    
+    def rotr(self, array, distance):
+        for i in range(distance):
+            first = array.pop()
+            array.insert(0, first)
 
-            if char == "(":
-                start_reading = True
-            
-            index_char += 1
+        return array
 
-    def translate_expression_word(self, index_char, expression, word):
-        new_expression = expression[index_char:]
+    def translate_word(self, word):
                 
         try:    operation = self.operation[word]
         except: operation = "Unknown"
@@ -246,57 +243,20 @@ class Utils():
         match(operation):                    
             # Casting
             case self.ops.DATA_TYPE:
-                result, index_char_addition = self.translate_internal_expr(new_expression)
-                result = f"{word}({result})"
+                result = word
 
             case self.ops.BUILTIN_CONSTANT:
-                index_char_addition = 0
                 result = self.builtin_constants[word]
             
             case self.ops.BUILTIN_FUNCTION:
-                result , index_char_addition = self.translate_internal_expr(new_expression)
-                result = f"{self.builtin_functions[word]}({result})"
+                result = self.builtin_functions[word]
 
             case "Unknown":
-                # Number
-                if word.isdigit():
-                    result = word
-                    index_char_addition = 0
+                result = word
 
-                # Variable
-                else:
-                    # Array access
-                    if new_expression[0] == "[":
-                        variable_access = ""
-                        index_char = 0
+        return result
 
-                        for char in new_expression:
-                            index_char += 1
-                            variable_access += char
-
-                            if char == "]":
-                                break
-
-                        result = word + variable_access
-                        index_char_addition = index_char
-
-                    # Not array
-                    else:
-                        result = word
-                        index_char_addition = 0
-
-        return result, index_char_addition
-
-    def translate_expression(self, expression):
-        '''
-        Process:
-        - Check data type (casting)
-        - Check builtin function
-        - Check builtin constant
-        - Check variable
-        - Check number
-        '''
-        
+    def translate_expression(self, expression):       
         '''
         UCs:
         complex[float] d = int(2.0) + sin(pi/2) + (my_var * 5.5 im);
@@ -305,43 +265,35 @@ class Utils():
         
         word = ""
         translation = ""
+        index_char = 0
+        char = expression[0]
 
-        for index_char in range(len(expression)):
+        while index_char < len(expression):
             char = expression[index_char]
 
-            if char == ";":
-                continue
-
-            if char == " " or char in self.math_operators:
+            if char == " " or char in self.math_operators or char in self.special_chars:
+                # There is nothing to translate -> "int(2.0) aleready read and translated, next char is " " and next one "+" "
                 if word == "":
                     translation += char
 
+                # There is something to translate:
+                # -> pi in "pi/2", we read pi and next char is "/" so we have to translate pi before continuing
+                # -> my_var in "(my_var * ..."
+                # -> int in "int(2.0) ..."
                 else:
-                    result, index_char_addition = self.translate_expression_word(index_char, expression, word)
+                    result = self.translate_word(word)
 
+                    # Add the translation plus the current read char
                     translation += result + char
-                    index_char += index_char_addition
+                    # Reset word to read another expression
                     word = ""
-
-            elif char in self.special_chars:
-                result, index_char_addition = self.translate_expression_word(index_char, expression, word)
-
-                translation += result
-                index_char += index_char_addition
-                word = ""
                 
             else:
                 word += char
 
-        if word != "":
-            result, _ = self.translate_expression_word(index_char, expression, word)
-            translation += result
+            index_char += 1
 
-        return translation
-        
-    # TODO
-    # Probar que self.translate_expression funciona
-            
+        return translation            
 
     # DATA TYPES TRANSLATIONS
     def translate_qubit(self, index_line, line):
@@ -415,8 +367,8 @@ class Utils():
 
         line_splitted = line.split(" ")
 
-        if line_splitted[0] != "":
-            amount_int_bits = int(line_splitted[0][1:-1])   # Remove square brackets
+        # if line_splitted[0] != "":
+        #     amount_int_bits = int(line_splitted[0][1:-1])   # Remove square brackets
 
         # No value assignation
         if len(line_splitted) == 2:
@@ -426,7 +378,8 @@ class Utils():
         # Value assignation
         else:
             var_id = line_splitted[1]
-            value = f" = {line_splitted[-1][:-1]}"
+            pending_line = " ".join(line_splitted[3:])[:-1]
+            value = f" = {self.translate_expression(pending_line)}"
 
         # Translate the line
         translated_line = f"{var_id}: int{value}"
@@ -437,7 +390,7 @@ class Utils():
         self.translated_code_info[self.keys.trans_code_info.VARS_REF][var_id] = var_id
         self.translated_code.append(translated_line)
 
-    def translate_float(self, index_line, operation, line):
+    def translate_float(self, index_line, line):
         '''
         UCs:
         float[16] my_var = π;
@@ -446,25 +399,24 @@ class Utils():
         float my_var;
         '''
 
-        if line != "":
-            amount_float_bits = int(line[1:-1])   # Remove square brackets
+        line_splitted = line.split(" ")
 
-         # Check in which UC we are
-        amount_operation = len(operation)
+        # if line != "":
+        #     amount_float_bits = int(line[1:-1])   # Remove square brackets
+
         # No value assignation
-        if amount_operation == 1:
-            var_id = operation[0][:-1]
+        if len(line_splitted) == 2:
+            var_id = line_splitted[1][:-1]
             value = ""
 
         # Value assignation
-        elif amount_operation > 1:
-            var_id = operation[0]
-            value = operation[2][:-1]
-            if value in self.builtin_constants:     value = f" = {self.builtin_constants[value]}"
-            else:                                   value = f" = {value}"
+        else:
+            var_id = line_splitted[1]
+            pending_line = " ".join(line_splitted[3:])[:-1]
+            value = f" = {self.translate_expression(pending_line)}"
 
         # Translate the line
-        translated_line = f"{var_id}: int{value}"
+        translated_line = f"{var_id}: float{value}"
 
         # Update translation info
         self.translated_code_info[self.keys.trans_code_info.INSTRUCTIONS]["amount"] += 1
@@ -472,26 +424,58 @@ class Utils():
         self.translated_code_info[self.keys.trans_code_info.VARS_REF][var_id] = var_id
         self.translated_code.append(translated_line)
 
-    def translate_angle(self, index_line, operation, line):
+    def translate_angle(self, index_line, line):
         pass
 
-    def translate_complex(self, index_line, operation, line):
+    def translate_complex(self, index_line, line):
+        '''
+        UCs:
+        complex[float[16]] my_var = π;
+        complex[float[16]] my_var;
+        complex[float] my_var = 2.3;
+        complex[float] my_var;
+        '''
+
+        line_splitted = line.split(" ")
+
+        # Here it is different
+        # if line != "":
+        #     amount_float_bits = int(line[1:-1])   # Remove square brackets
+
+        # No value assignation
+        if len(line_splitted) == 2:
+            var_id = line_splitted[1][:-1]
+            value = ""
+
+        # Value assignation
+        else:
+            var_id = line_splitted[1]
+            pending_line = " ".join(line_splitted[3:])[:-1]
+            value = f" = {self.translate_expression(pending_line)}"
+
+        # Translate the line
+        translated_line = f"{var_id}: complex{value}"
+
+        # Update translation info
+        self.translated_code_info[self.keys.trans_code_info.INSTRUCTIONS]["amount"] += 1
+        self.translated_code_info[self.keys.trans_code_info.INSTRUCTIONS]["lines"].append(translated_line)
+        self.translated_code_info[self.keys.trans_code_info.VARS_REF][var_id] = var_id
+        self.translated_code.append(translated_line)
+
+    def translate_bool(self, index_line, line):
         pass
 
-    def translate_bool(self, index_line, operation, line):
+    def translate_const(self, index_line, line):
         pass
 
-    def translate_const(self, index_line, operation, line):
+    def translate_duration(self, index_line, line):
         pass
 
-    def translate_duration(self, index_line, operation, line):
+    def translate_array(self, index_line, line):
         pass
 
-    def translate_array(self, index_line, operation, line):
+    def translate_strech(self, index_line, line):
         pass
 
-    def translate_strech(self, index_line, operation, line):
-        pass
-
-    def translate_let(self, index_line, operation, line):
+    def translate_let(self, index_line, line):
         pass
