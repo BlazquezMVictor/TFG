@@ -58,7 +58,7 @@ class Utils():
             "τ": "np.pi*2",
             "euler": "np.e",
             "ℇ": "np.e",
-            "im": "1j"
+            "im": "* 1j"
         }
         self.builtin_functions = {
             "arcos": "np.arccos",
@@ -236,7 +236,8 @@ class Utils():
         return array
 
     def translate_word(self, word):
-                
+        is_casting = False
+
         try:    operation = self.operation[word]
         except: operation = "Unknown"
 
@@ -244,6 +245,7 @@ class Utils():
             # Casting
             case self.ops.DATA_TYPE:
                 result = word
+                is_casting = True
 
             case self.ops.BUILTIN_CONSTANT:
                 result = self.builtin_constants[word]
@@ -254,7 +256,7 @@ class Utils():
             case "Unknown":
                 result = word
 
-        return result
+        return result, is_casting
 
     def translate_expression(self, expression):       
         '''
@@ -267,11 +269,33 @@ class Utils():
         translation = ""
         index_char = 0
         char = expression[0]
+        is_casting = False
 
         while index_char < len(expression):
             char = expression[index_char]
 
-            if char == " " or char in self.math_operators or char in self.special_chars:
+            if char == ";":
+                result, is_casting = self.translate_word(word)
+                translation += result
+
+            elif char == " " or char in self.math_operators or char in self.special_chars:
+                # Check wether we have to ignore [4] or not
+                if is_casting:
+                    # If we read '[', then we have to ignore
+                    if char == "[":
+                        index_char += 1
+                        continue
+                    # If we read ']', then we stop ignoring
+                    elif char == "]":
+                        is_casting = False
+                        word = ""
+                        index_char += 1
+                        continue
+                    # Otherwise, we do not have to ignore although we are casting
+                    else:
+                        is_casting = False
+                    
+
                 # There is nothing to translate -> "int(2.0) aleready read and translated, next char is " " and next one "+" "
                 if word == "":
                     translation += char
@@ -281,7 +305,15 @@ class Utils():
                 # -> my_var in "(my_var * ..."
                 # -> int in "int(2.0) ..."
                 else:
-                    result = self.translate_word(word)
+                    result, is_casting = self.translate_word(word)
+
+                    # If we are casting, check the special char read so that we know if we have to ignore '[4]' or not
+                    if is_casting:
+                        if char == "[":
+                            translation += result
+                            continue
+                        else:
+                            is_casting = False
 
                     # Add the translation plus the current read char
                     translation += result + char
@@ -378,7 +410,7 @@ class Utils():
         # Value assignation
         else:
             var_id = line_splitted[1]
-            pending_line = " ".join(line_splitted[3:])[:-1]
+            pending_line = " ".join(line_splitted[3:])
             value = f" = {self.translate_expression(pending_line)}"
 
         # Translate the line
@@ -412,7 +444,7 @@ class Utils():
         # Value assignation
         else:
             var_id = line_splitted[1]
-            pending_line = " ".join(line_splitted[3:])[:-1]
+            pending_line = " ".join(line_splitted[3:])
             value = f" = {self.translate_expression(pending_line)}"
 
         # Translate the line
@@ -425,6 +457,13 @@ class Utils():
         self.translated_code.append(translated_line)
 
     def translate_angle(self, index_line, line):
+        '''
+        UCs:
+        angle[16] my_var = π;
+        angle[16] my_var;
+        angle my_var = π;
+        angle my_var;
+        '''
         pass
 
     def translate_complex(self, index_line, line):
@@ -450,7 +489,7 @@ class Utils():
         # Value assignation
         else:
             var_id = line_splitted[1]
-            pending_line = " ".join(line_splitted[3:])[:-1]
+            pending_line = " ".join(line_splitted[3:])
             value = f" = {self.translate_expression(pending_line)}"
 
         # Translate the line
@@ -463,7 +502,38 @@ class Utils():
         self.translated_code.append(translated_line)
 
     def translate_bool(self, index_line, line):
-        pass
+        '''
+        UCs:
+        bool my_var = true;
+        bool my_var = false;
+        bool my_var;
+        '''
+        
+        line_splitted = line.split(" ")
+
+        # if line != "":
+        #     amount_float_bits = int(line[1:-1])   # Remove square brackets
+
+        # No value assignation
+        if len(line_splitted) == 2:
+            var_id = line_splitted[1][:-1]
+            value = ""
+
+        # Value assignation
+        else:
+            var_id = line_splitted[1]
+            pending_line = " ".join(line_splitted[3:])
+            value = f" = {self.translate_expression(pending_line)}"
+
+        # Translate the line
+        translated_line = f"{var_id}: bool{value}"
+
+        # Update translation info
+        self.translated_code_info[self.keys.trans_code_info.INSTRUCTIONS]["amount"] += 1
+        self.translated_code_info[self.keys.trans_code_info.INSTRUCTIONS]["lines"].append(translated_line)
+        self.translated_code_info[self.keys.trans_code_info.VARS_REF][var_id] = var_id
+        self.translated_code.append(translated_line)
+
 
     def translate_const(self, index_line, line):
         pass
