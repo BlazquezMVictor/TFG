@@ -10,6 +10,8 @@ class Operations():
         self.BUILTIN_FUNCTION = 5
         self.STD_GATE = 6
         self.GATE_OPERATION = 7
+        self.VAR_ASSIGNATION = 8
+        self.CLASSIC_INSTRUCTION = 9
 
 class TranslatedCodeInfo():
     def __init__(self):
@@ -35,6 +37,8 @@ class Utils():
             "/*": "'''",
             "*/": "'''"
         }
+        # TODO:
+        # Mirar los literales
         self.data_types = {
             "qubit": "translate_qubit",
             "bit": "translate_bit",
@@ -79,12 +83,12 @@ class Utils():
             "tan": "np.tan",
             # TODO
             # Translate this functions
-            # "gate",
-            # "reset",
-            # "measure",
-            # "barrier",
-            # "real",
-            # "imag"
+            "gate": "",       # Starts line (coulbe be more than one line)
+            "reset": "",      # Starts line
+            "measure": "",
+            "barrier": "",    # Starts line
+            "real": "",
+            "imag": ""
         }
         self.std_gates = {
             "p",
@@ -119,6 +123,10 @@ class Utils():
             "ctrl",     # 'ctrl @' indicates that the following gate is controlled -> ctrl @ rz(pi) q1, q2; q1 is control & q2 is target
             "negctrl",  # it is as 'ctrl' but uses 0 as activation bit instead of 1
             "pow"
+        }
+        self.classic_instructions = {
+            "if",
+            "def"
         }
         self.operation = {
             "(": self.ops.SPECIAL_CHAR,
@@ -210,7 +218,10 @@ class Utils():
 
             "ctrl": self.ops.GATE_OPERATION,
             "negctrl": self.ops.GATE_OPERATION,
-            "pow": self.ops.GATE_OPERATION
+            "pow": self.ops.GATE_OPERATION,
+
+            "if": self.ops.CLASSIC_INSTRUCTION,
+            "def": self.ops.CLASSIC_INSTRUCTION
         }
         self.translated_code_info = {
             self.keys.trans_code_info.QUBITS:       {"amount": 0, "lines": []},
