@@ -10,7 +10,7 @@ class Operations():
         self.BUILTIN_FUNCTION = 5
         self.STD_GATE = 6
         self.GATE_OPERATION = 7
-        self.VAR_ASSIGNATION = 8
+        self.USER_DEFINED = 8
         self.CLASSIC_INSTRUCTION = 9
 
 class TranslatedCodeInfo():
@@ -39,6 +39,8 @@ class Utils():
         }
         # TODO:
         # Mirar los literales
+        # TODO:
+        # Dar soporte a los tipos de datos Input/Output
         self.data_types = {
             "qubit": "translate_qubit",
             "bit": "translate_bit",
@@ -81,14 +83,8 @@ class Utils():
             "sin": "np.sin",
             "sqrt": "np.sqrt",
             "tan": "np.tan",
-            # TODO
-            # Translate this functions
-            "gate": "",       # Starts line (coulbe be more than one line)
-            "reset": "",      # Starts line
-            "measure": "",
-            "barrier": "",    # Starts line
-            "real": "",
-            "imag": ""
+            "real": ".real",
+            "imag": ".imag"
         }
         self.std_gates = {
             "p",
@@ -119,14 +115,32 @@ class Utils():
             "U",
             "gphase",
         }
+        # TODO:
+        # Traducir las gatee_operations
         self.gate_operations = {
             "ctrl",     # 'ctrl @' indicates that the following gate is controlled -> ctrl @ rz(pi) q1, q2; q1 is control & q2 is target
             "negctrl",  # it is as 'ctrl' but uses 0 as activation bit instead of 1
-            "pow"
+            "pow",
+            "gate",       # Puede ocupar mas de una linea
+            "reset",
+            "measure",
+            "barrier",
         }
         self.classic_instructions = {
-            "if",
-            "def"
+            "&&": "and",
+            "||": "or",
+            "if": "if",         # Puede ocupar mas de una linea (recordar que puede tener else statement)
+            "for": "for",       # Puede ocupar mas de una linea
+            "while": "while",   # Puede ocupar mas de una linea
+            "break": "break",
+            "continue": "continue",
+            "end": "",              # It terminates the program
+            "switch": "match",      # Not yet implemented # Puede ocupar mas de una linea
+            "case": "case",         # Not yet implemented
+            "default": "case _",    # Not yet implemented
+            "def": "def",           # Puede ocupar mas de una linea
+            "return": "return",
+
         }
         self.operation = {
             "(": self.ops.SPECIAL_CHAR,
@@ -181,10 +195,6 @@ class Utils():
             "sin": self.ops.BUILTIN_FUNCTION,
             "sqrt": self.ops.BUILTIN_FUNCTION,
             "tan": self.ops.BUILTIN_FUNCTION,
-            "gate": self.ops.BUILTIN_FUNCTION,
-            "reset": self.ops.BUILTIN_FUNCTION,
-            "measure": self.ops.BUILTIN_FUNCTION,
-            "barrier": self.ops.BUILTIN_FUNCTION,
             "real": self.ops.BUILTIN_FUNCTION,
             "imag": self.ops.BUILTIN_FUNCTION,
 
@@ -219,9 +229,25 @@ class Utils():
             "ctrl": self.ops.GATE_OPERATION,
             "negctrl": self.ops.GATE_OPERATION,
             "pow": self.ops.GATE_OPERATION,
+            "gate": self.ops.GATE_OPERATION,
+            "reset": self.ops.GATE_OPERATION,
+            "measure": self.ops.GATE_OPERATION,
+            "barrier": self.ops.GATE_OPERATION,
 
+            "&&": self.ops.CLASSIC_INSTRUCTION,
+            "||": self.ops.CLASSIC_INSTRUCTION,
             "if": self.ops.CLASSIC_INSTRUCTION,
-            "def": self.ops.CLASSIC_INSTRUCTION
+            "for": self.ops.CLASSIC_INSTRUCTION,
+            "while": self.ops.CLASSIC_INSTRUCTION,
+            "break": self.ops.CLASSIC_INSTRUCTION,
+            "continue": self.ops.CLASSIC_INSTRUCTION,
+            "end": self.ops.CLASSIC_INSTRUCTION,
+            "switch": self.ops.CLASSIC_INSTRUCTION,
+            "case": self.ops.CLASSIC_INSTRUCTION,
+            "default": self.ops.CLASSIC_INSTRUCTION,
+            "def": self.ops.CLASSIC_INSTRUCTION,
+            "return": self.ops.CLASSIC_INSTRUCTION,
+
         }
         self.translated_code_info = {
             self.keys.trans_code_info.QUBITS:       {"amount": 0, "lines": []},
@@ -339,6 +365,9 @@ class Utils():
             index_char += 1
 
         return translation            
+
+    def translate(self, op):
+        pass
 
     # DATA TYPES TRANSLATIONS
     def translate_qubit(self, index_line, line):
