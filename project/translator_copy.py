@@ -14,7 +14,7 @@ class Translator():
     def is_var_identifier(self, identifier):
         return bool(re.match(self.identifier_RE, identifier))
 
-    def mid_translate_comments(self, code_lines, word, index_line, begin_line):
+    def mid_translate_comments(self, code_lines, word, index_line, begin_line, append):
         if word != "/*":
             end_line = begin_line
 
@@ -28,67 +28,93 @@ class Translator():
                 ending_comment = line[-2:]
 
             end_line = index_line
-            
-        self.mid_translation.append({"lines": (begin_line, end_line), "operation": (self.ops.COMMENTS, "COMMENT"), "word": word})
 
-        return index_line
+        info = {"lines": (begin_line, end_line), "operation": (self.ops.COMMENTS, "COMMENT"), "word": word, "inner_ops": []}
+
+        if append:  self.mid_translation.append(info)
+
+        return index_line, info
     
-    def mid_translate_data_type(self, code_lines, word, index_line, begin_line):
+    def mid_translate_data_type(self, code_lines, word, index_line, begin_line, append):
         if word != "array":
+            inner_ops = []
             end_line = begin_line
 
         else:
-            index_line = self.get_ending_brace_line(code_lines, index_line)
+            index_line, inner_ops = self.get_ending_brace_line(code_lines, index_line)
             end_line = index_line
             
-        self.mid_translation.append({"lines": (begin_line, end_line), "operation": (self.ops.DATA_TYPE, "DATA_TYPE"), "word": word})
+        # TODO:
+        # El inner operations seguramente no funcione con las arrays porque empiezan con '{'
+        info = {"lines": (begin_line, end_line), "operation": (self.ops.DATA_TYPE, "DATA_TYPE"), "word": word, "inner_ops": inner_ops}
 
-        return index_line
+        if append:  self.mid_translation.append(info)
+
+        return index_line, info
     
-    def mid_translate_gate_operation(self, code_lines, word, index_line, begin_line):
+    def mid_translate_std_gate(self, code_lines, word, index_line, begin_line, append):
+        end_line = begin_line
+        info = {"lines": (begin_line, end_line), "operation": (self.ops.STD_GATE, "STD_GATE"), "word": word, "inner_ops": []}
+
+        if append:  self.mid_translation.append(info)
+
+        return index_line, info
+    
+    def mid_translate_gate_operation(self, code_lines, word, index_line, begin_line, append):
         if word != "gate":
+            inner_ops = []
             end_line = begin_line
 
         else:
-            index_line = self.get_ending_brace_line(code_lines, index_line)
+            index_line, inner_ops = self.get_ending_brace_line(code_lines, index_line)
             end_line = index_line
 
-        self.mid_translation.append({"lines": (begin_line, end_line), "operation": (self.ops.GATE_OPERATION, "GATE_OPERATION"), "word": word})
+        info = {"lines": (begin_line, end_line), "operation": (self.ops.GATE_OPERATION, "GATE_OPERATION"), "word": word, "inner_ops": inner_ops}
+        
+        if append:  self.mid_translation.append(info)
 
-        return index_line
+        return index_line, info
     
-    def mid_translate_classic_instc(self, code_lines, word, index_line, begin_line):
+    def mid_translate_classic_instc(self, code_lines, word, index_line, begin_line, append):
         if word not in {"if", "for", "while", "switch", "def"}:
+            inner_ops = []
             end_line = begin_line
 
         else:
-            index_line = self.get_ending_brace_line(code_lines, index_line)
+            index_line, inner_ops = self.get_ending_brace_line(code_lines, index_line)
             end_line = index_line
 
-        self.mid_translation.append({"lines": (begin_line, end_line), "operation": (self.ops.CLASSIC_INSTRUCTION, "CLASSIC_INSTRUCTION"), "word": word})
+        info = {"lines": (begin_line, end_line), "operation": (self.ops.CLASSIC_INSTRUCTION, "CLASSIC_INSTRUCTION"), "word": word, "inner_ops": inner_ops}
+        
+        if append:  self.mid_translation.append(info)
 
-        return index_line
+        return index_line, info
 
     def get_ending_brace_line(self, code_lines, index_line):
         line = code_lines[index_line]
         brace_count = line.count("{")
         brace_count -= line.count("}")
+        inner_operations = []
 
         while brace_count > 0:
             index_line += 1
             line = code_lines[index_line]
 
+            info = self.mid_translate(line, False)
+            inner_operations.append(info)
+
             brace_count += line.count("{")
             brace_count -= line.count("}")
 
-        return index_line
+        return index_line, inner_operations
 
 
-    def mid_translate(self, code):
+    def mid_translate(self, code, append):
         code_lines = code.split("\n")
         index_line = 0
         begin_line = 0
         end_line = 0
+        info = {}
 
         while index_line < len(code_lines):
             begin_line = index_line
@@ -111,10 +137,10 @@ class Translator():
                         pass
 
                     case self.ops.COMMENTS:
-                        index_line = self.mid_translate_comments(code_lines, word, index_line, begin_line)
+                        index_line, info = self.mid_translate_comments(code_lines, word, index_line, begin_line, append)
 
                     case self.ops.DATA_TYPE:
-                        index_line = self.mid_translate_data_type(code_lines, word, index_line, begin_line)
+                        index_line, info = self.mid_translate_data_type(code_lines, word, index_line, begin_line, append)
                     
                     case self.ops.BUILTIN_CONSTANT:
                         pass
@@ -123,14 +149,13 @@ class Translator():
                         pass
                     
                     case self.ops.STD_GATE:
-                        end_line = begin_line
-                        self.mid_translation.append({"lines": (begin_line, end_line), "operation": (self.ops.STD_GATE, "STD_GATE"), "word": word})
+                        index_line, info = self.mid_translate_std_gate(code_lines, word, index_line, begin_line, append)
                         
                     case self.ops.GATE_OPERATION:
-                        index_line = self.mid_translate_gate_operation(code_lines, word, index_line, begin_line)
+                        index_line, info = self.mid_translate_gate_operation(code_lines, word, index_line, begin_line, append)
 
                     case self.ops.CLASSIC_INSTRUCTION:
-                        index_line = self.mid_translate_classic_instc(code_lines, word, index_line, begin_line)
+                        index_line, info = self.mid_translate_classic_instc(code_lines, word, index_line, begin_line, append)
 
             else:
                 # Chek it we are reading a comment of type "//text" or "/*text..."
@@ -144,12 +169,14 @@ class Translator():
                 
             index_line += 1
 
+        return info
+
     def last_translate(self):
         for op in self.mid_translation:
             self.utils.translate(op)
 
     def translate(self, code:str):
-        self.mid_translate(code)
+        self.mid_translate(code, True)
         # self.last_translate()
 
 if __name__ == "__main__":
@@ -180,45 +207,47 @@ if __name__ == "__main__":
     # '''
     complex_code = '''
         /*
-        * Repeat-until-success circuit for Rz(theta),
-        * cos(theta-pi)=3/5, from Nielsen and Chuang, Chapter 4.
+        * Prepare a parameterized number of Bell pairs
+        * and teleport a qubit using them.
         */
-        OPENQASM 3;
         include "stdgates.inc";
 
-        /*
-        * Applies identity if out is 01, 10, or 11 and a Z-rotation by
-        * theta + pi where cos(theta)=3/5 if out is 00.
-        * The 00 outcome occurs with probability 5/8.
-        */
-        def segment qubit[2] anc, qubit psi -> bit[2] {
-        bit[2] b;
-        reset anc;
-        h anc;
-        ccx anc[0], anc[1], psi;
-        s psi;
-        ccx anc[0], anc[1], psi;
-        z psi;
-        h anc;
-        measure anc -> b;
-        return b;
+        const int[32] n_pairs = 10;  // number of teleportations to do
+
+        def bellprep(qubit[2] q) {
+        reset q;
+        h q[0];
+        cx q[0], q[1];
         }
 
-        qubit input;
-        qubit[2] ancilla;
-        bit[2] flags = "11";
-        bit output;
-
-        reset input;
-        h input;
-
-        // braces are optional in this case
-        while(int(flags) != 0) {
-        flags = segment ancilla, input;
+        def xprepare(qubit q) {
+        reset q;
+        h q;
         }
-        rz(pi - arccos(3 / 5)) input;
-        h input;
-        output = measure input;  // should get zero
+
+        qubit input_qubit;
+        bit output_qubit;
+        qubit[2*n_pairs] q;
+
+        xprepare(input_qubit);
+        rz(pi / 4) input_qubit;
+
+        let io = input_qubit;
+        for uint i in [0: n_pairs - 1] {
+        let bp = q[{2*i, 2*i + 1}];
+        bit[2] pf;
+        bellprep bp;
+        cx io, bp[0];
+        h io;
+        pf[0] = measure io;
+        pf[1] = measure bp[0];
+        if (pf[0]==1) z bp[1];
+        if (pf[1]==1) x bp[1];
+        let io = bp[1];
+        }
+
+        h io;
+        output_qubit = measure io;  // should get zero
     '''
     # TODO:
     # Mirar que funcion es 'post'
