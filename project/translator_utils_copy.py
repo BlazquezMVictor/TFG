@@ -506,6 +506,7 @@ class Utils():
         angle my_var = π;
         angle my_var;
         '''
+        # Se tratan como un float
         pass
 
     def translate_complex(self, index_line, line):
@@ -578,16 +579,46 @@ class Utils():
 
 
     def translate_const(self, index_line, line):
+        '''
+        UCs:
+        const uint my_var = 32;
+        const float[32] my_var = 2.5
+        '''
+        # Los constante solo funciona con lo constante
+        # Para establecer tamaños de arrays solo se puede con valores constantes o scalar literals, que son numeros positivos
         pass
 
     def translate_duration(self, index_line, line):
+        # Ignorarlo o como maximo hacer un sleep
         pass
 
     def translate_array(self, index_line, line):
+        '''
+        UCs:
+        array[int[32], 5] my_var;
+        array[int[32], 5] my_var = {0, 1, 2, 3, 4};
+        array[float[32], 3, 2] my_var = {{1.1, 1.2}, {2.1, 2.2}, {3.1, 3.2}};
+
+
+        DECLARATION:
+        array[data_type, dim_size1, (dim_size2), ..., (dim_size7)]
+        - data_type: bit, int, uint, float, complex, angle, bool, duration
+
+        NOTES:
+        - Se deben declarar en el scope global, no vale cualquier otro sitio
+        - Pueden usar indices negativos como en python para su acceso
+        - El tamaño maximo es de 7 dimensiones
+        '''
         pass
 
     def translate_strech(self, index_line, line):
+        # Ignorarlo o como maximo hacer un sleep
         pass
 
     def translate_let(self, index_line, line):
+        '''
+        UC:
+        qubit[5] q;
+        let my_var = q[1:4]
+        '''
         pass
