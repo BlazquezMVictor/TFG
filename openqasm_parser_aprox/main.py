@@ -1,11 +1,13 @@
 import pathlib
 
+from main_translator import MainTranslator
 # TODO:
 # Mirar el final de los tipos de la documentacion ("Register concatenation and slicing", "Classical value bit slicing", "Array concatenation and slicing")
 
 TEST_DIR = pathlib.Path(__file__).parent
 filename = "parser_code.txt"
 # filename = "parser_data_types.txt"
+# filename = "parser_complex.txt"
 
 grammar_words = {
     "program",
@@ -104,7 +106,9 @@ grammar_words = {
 irrelevant_words = {
     ";",
     # ",",
+    "<EOF>"
 }
+
 def remove_jump_line(code):
     result = []
     for line in code:
@@ -115,17 +119,19 @@ def remove_jump_line(code):
 # TODO:
 # Junta metodos "remove_blank_spaces" y "get_relevant_info"
 def remove_blank_spaces(code):
-    word_to_exclude_from_starting_code = {"OPENQASM", "includeStatement"}
-    start_code_line = 0
+    word_to_exclude_from_starting_code = {"program", "includeStatement"}
     result = []
 
     for line in code:
         line = line.split(" ")
-        statement_found = False
         line_result = []
+        statement_found = False
+        append = True
 
         for word in line:
-            if word in word_to_exclude_from_starting_code:  start_code_line += 1
+            if word in word_to_exclude_from_starting_code:
+                append = False
+                break
 
             if statement_found and word != "":
                 line_result.append(word)
@@ -136,9 +142,10 @@ def remove_blank_spaces(code):
             if not statement_found and word == "statement":
                 statement_found = True
         
-        result.append(line_result)
+        if append and statement_found:
+            result.append(line_result)
 
-    return result, start_code_line
+    return result
 
 def get_line_indent(line):
     indent = 0
@@ -159,15 +166,24 @@ def get_info(line):
 
 def get_relevant_info(code):
     result = []
+    last_indent = -1
+    parsed_indent = -1
 
     for line in code:
         indent = get_line_indent(line)
         info = get_info(line[indent:])
 
-        result.append((indent, info))
+        if indent > last_indent:
+            parsed_indent += 1
+            last_indent = indent
+        
+        elif indent < last_indent:
+            parsed_indent -= 1
+            last_indent = indent
+
+        result.append((parsed_indent, info))
 
     return result
-
 
 # MAIN
 if __name__ == "__main__":
@@ -175,12 +191,16 @@ if __name__ == "__main__":
         txt = file.read()
 
         code = txt.split("statementOrScope")
+        translator = MainTranslator()
         
         result = remove_jump_line(code)
-        result, start_code_line = remove_blank_spaces(result)
-        result = get_relevant_info(result[start_code_line:])
+        result = remove_blank_spaces(result)
+        result = get_relevant_info(result)
 
-        print(start_code_line)
+        # translated_code = translator.translate(result)
 
         for line in result:
             print(f"L: {line}")
+
+        # for line in translated_code:
+        #     print(f"L: {line}")
