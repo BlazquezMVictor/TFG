@@ -1,13 +1,13 @@
 import pathlib
 
-from main_translator import MainTranslator
+from openqasm_parser_aprox.translator import Translator
 # TODO:
 # Mirar el final de los tipos de la documentacion ("Register concatenation and slicing", "Classical value bit slicing", "Array concatenation and slicing")
 
 TEST_DIR = pathlib.Path(__file__).parent
-filename = "parser_code.txt"
-# filename = "parser_data_types.txt"
-# filename = "parser_complex.txt"
+filename = "ast_codes_parsed/parser_code.txt"
+# filename = "ast_codes_parsed/parser_data_types.txt"
+# filename = "ast_codes_parsed/parser_complex.txt"
 
 grammar_words = {
     "program",
@@ -191,7 +191,7 @@ if __name__ == "__main__":
         txt = file.read()
 
         code = txt.split("statementOrScope")
-        translator = MainTranslator()
+        translator = Translator()
         
         result = remove_jump_line(code)
         result = remove_blank_spaces(result)

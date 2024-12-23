@@ -1,7 +1,7 @@
 from type_instr_translator import *
 from translator_utils import TranslatorUtils
 
-class MainTranslator:
+class Translator:
     def __init__(self):
         self.init_type_instr_translators()
         self.init_data_structures()
