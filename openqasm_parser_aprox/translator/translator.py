@@ -1,5 +1,5 @@
-from type_instr_translator import *
-from translator_utils import TranslatorUtils
+from .type_instr_translator import *
+from .translator_utils import TranslatorUtils
 
 class Translator:
     def __init__(self):

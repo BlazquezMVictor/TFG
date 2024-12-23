@@ -1,4 +1,4 @@
-from translator_utils import TranslatorUtils
+from .translator_utils import TranslatorUtils
 
 class DataTypeTranslator:
     def __init__(self):

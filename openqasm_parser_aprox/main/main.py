@@ -1,10 +1,21 @@
 import pathlib
+import sys
+import os
 
-from openqasm_parser_aprox.translator import Translator
+# This line will add to the python list of paths to look for modules the path to the project root
+project_root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+print()
+print(project_root_path)
+print()
+if project_root_path not in sys.path:
+    sys.path.append(project_root_path)
+
+from translator.translator import Translator
+
 # TODO:
 # Mirar el final de los tipos de la documentacion ("Register concatenation and slicing", "Classical value bit slicing", "Array concatenation and slicing")
 
-TEST_DIR = pathlib.Path(__file__).parent
+TEST_DIR = pathlib.Path(__file__).parent.parent
 filename = "ast_codes_parsed/parser_code.txt"
 # filename = "ast_codes_parsed/parser_data_types.txt"
 # filename = "ast_codes_parsed/parser_complex.txt"
