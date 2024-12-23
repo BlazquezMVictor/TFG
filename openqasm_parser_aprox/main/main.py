@@ -3,22 +3,23 @@ import sys
 import os
 
 # This line will add to the python list of paths to look for modules the path to the project root
-project_root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-print()
-print(project_root_path)
-print()
-if project_root_path not in sys.path:
-    sys.path.append(project_root_path)
+MAIN_PARENT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if MAIN_PARENT_PATH not in sys.path:
+    sys.path.append(MAIN_PARENT_PATH)
+
 
 from translator.translator import Translator
+
+
+os.system("cls")
 
 # TODO:
 # Mirar el final de los tipos de la documentacion ("Register concatenation and slicing", "Classical value bit slicing", "Array concatenation and slicing")
 
-TEST_DIR = pathlib.Path(__file__).parent.parent
-filename = "ast_codes_parsed/parser_code.txt"
-# filename = "ast_codes_parsed/parser_data_types.txt"
-# filename = "ast_codes_parsed/parser_complex.txt"
+parsed_codes_folder = "ast_codes_parsed"
+# filename = "parser_code.txt"
+# filename = "parser_data_types.txt"
+filename = "parser_complex.txt"
 
 grammar_words = {
     "program",
@@ -198,7 +199,7 @@ def get_relevant_info(code):
 
 # MAIN
 if __name__ == "__main__":
-    with open(TEST_DIR / filename, "r") as file:
+    with open(MAIN_PARENT_PATH + "/" + parsed_codes_folder + "/" + filename, "r") as file:
         txt = file.read()
 
         code = txt.split("statementOrScope")
@@ -208,10 +209,10 @@ if __name__ == "__main__":
         result = remove_blank_spaces(result)
         result = get_relevant_info(result)
 
-        # translated_code = translator.translate(result)
+        translated_code = translator.translate(result)
 
-        for line in result:
-            print(f"L: {line}")
-
-        # for line in translated_code:
+        # for line in result:
         #     print(f"L: {line}")
+
+        for line in translated_code:
+            print(f"L: {line}")

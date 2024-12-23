@@ -1,4 +1,4 @@
-code = '''
+data_types = '''
     OPENQASM 3;
     include "stdgates.inc";
     
