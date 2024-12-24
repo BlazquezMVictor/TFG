@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class TranslatorUtils:
     def __init__(self):
         self.KEY_QUBITS = 0
@@ -40,6 +43,9 @@ class TranslatorUtils:
             "ℇ": "np.e",
             "im": "j"
         }
+        
+        # TODO:
+        # Hacer .real y .imag bien
         self.builtin_functions = {
             "arcos": "np.arccos",
             "arsin": "np.arcsin",
@@ -61,33 +67,33 @@ class TranslatorUtils:
             "imag": ".imag"
         }
         self.std_gates = {
-            "p",
-            "x",
-            "y",
-            "z",
-            "h",
-            "s",
-            "sdg",
-            "t",
-            "tdg",
-            "sx",
-            "rx",
-            "ry",
-            "rz",
-            "cx",
-            "cy",
-            "cz",
-            "cp",
-            "crx",
-            "cry",
-            "crz",
-            "ch",
-            "swap",
-            "ccx",
-            "cswap",
-            "cu",
-            "U",
-            "gphase",
+            "p": "translate_p",
+            "x": "translate_x",
+            "y": "translate_y",
+            "z": "translate_z",
+            "h": "translate_h",
+            "s": "translate_s",
+            "sdg": "translate_sdg",
+            "t": "translate_t",
+            "tdg": "translate_tdg",
+            "sx": "translate_sx",
+            "rx": "translate_rx",
+            "ry": "translate_ry",
+            "rz": "translate_rz",
+            "cx": "translate_cx",
+            "cy": "translate_cy",
+            "cz": "translate_cz",
+            "cp": "translate_cp",
+            "crx": "translate_crx",
+            "cry": "translate_cry",
+            "crz": "translate_crz",
+            "ch": "translate_ch",
+            "swap": "translate_swap",
+            "ccx": "translate_ccx",
+            "cswap": "translate_cswap",
+            "cu": "translate_cu",
+            "U": "translate_u",
+            "gphase": "translate_gphase",
         }
         # TODO:
         # Traducir las gatee_operations
@@ -132,3 +138,29 @@ class TranslatorUtils:
             array.insert(0, first)
 
         return array
+    
+    def matrix_square_roots(matrix):
+        """
+        Compute all possible square roots of a given quantum matrix.
+
+        Parameters:
+            matrix (np.ndarray): A square matrix (complex or real) to compute the square root of.
+
+        Returns:
+            matrix: A np.ndarray, square root of the input matrix.
+        """
+        # Verify that the input is square
+        if matrix.shape[0] != matrix.shape[1]:
+            raise ValueError("Input matrix must be square.")
+
+        # Perform eigenvalue decomposition
+        eigenvalues, eigenvectors = np.linalg.eig(matrix)
+
+        # Compute principal square root of eigenvalues
+        sqrt_eigenvalues = np.diag(np.emath.sqrt(eigenvalues))
+
+        # Reconstruct the principal square root
+        principal_sqrt = eigenvectors @ sqrt_eigenvalues @ np.linalg.inv(eigenvectors)
+
+        return principal_sqrt
+    

@@ -76,7 +76,8 @@ class DataTypeTranslator:
         bit[8] my_var;
         bit[8] my_var = "00001111";
         '''
-
+        # TODO:
+        # Mirar que cuando es solo un qubit no se genere como una lista
         bit_amount = 1
         if line[0] == "[":   bit_amount = int(line[1])
         eq_symbol_index = self.get_eq_symbol_index(line)
@@ -279,3 +280,90 @@ class DataTypeTranslator:
         translated_code_info[self.translator_utils.KEY_VARS_REF][var_id] = var_id
 
         return translation
+    
+class STDGateTranslator:
+    def __init__(self):
+        self.translator_utils = TranslatorUtils()
+
+    # TODO:
+    # Mirar como saber cual qubit es el objetivo, pues en qsimov tenemos una lista con todos
+    def translate_p(self, line, translated_code_info):
+        pass
+
+    def translate_x(self, line, translated_code_info):
+        pass
+
+    def translate_y(self, line, translated_code_info):
+        pass
+
+    def translate_z(self, line, translated_code_info):
+        pass
+
+    def translate_h(self, line, translated_code_info):
+        pass
+
+    def translate_s(self, line, translated_code_info):
+        pass
+
+    def translate_sdg(self, line, translated_code_info):
+        pass
+
+    def translate_t(self, line, translated_code_info):
+        pass
+
+    def translate_tdg(self, line, translated_code_info):
+        pass
+
+    def translate_sx(self, line, translated_code_info):
+        pass
+
+    def translate_rx(self, line, translated_code_info):
+        pass
+
+    def translate_ry(self, line, translated_code_info):
+        pass
+
+    def translate_rz(self, line, translated_code_info):
+        pass
+
+    def translate_cx(self, line, translated_code_info):
+        pass
+
+    def translate_cy(self, line, translated_code_info):
+        pass
+
+    def translate_cz(self, line, translated_code_info):
+        pass
+
+    def translate_cp(self, line, translated_code_info):
+        pass
+
+    def translate_crx(self, line, translated_code_info):
+        pass
+
+    def translate_cry(self, line, translated_code_info):
+        pass
+
+    def translate_crz(self, line, translated_code_info):
+        pass
+
+    def translate_ch(self, line, translated_code_info):
+        pass
+
+    def translate_swap(self, line, translated_code_info):
+        pass
+
+    def translate_ccx(self, line, translated_code_info):
+        pass
+
+    def translate_cswap(self, line, translated_code_info):
+        pass
+
+    def translate_cu(self, line, translated_code_info):
+        pass
+
+    def translate_u(self, line, translated_code_info):
+        pass
+
+    def translate_gphase(self, line, translated_code_info):
+        pass

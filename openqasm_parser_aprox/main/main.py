@@ -117,7 +117,8 @@ grammar_words = {
 }
 irrelevant_words = {
     ";",
-    # ",",
+    "{",
+    "}",
     "<EOF>"
 }
 
