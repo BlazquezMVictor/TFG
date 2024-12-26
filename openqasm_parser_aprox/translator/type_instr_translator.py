@@ -62,8 +62,14 @@ class DataTypeTranslator:
 
         translation = f"QRegistry({qubit_amount}) {var_id}"
 
-        translated_code_info[self.translator_utils.KEY_QUBITS]["amount"] += qubit_amount
-        translated_code_info[self.translator_utils.KEY_QUBITS]["lines"].append(translation)
+        registered_qubits = translated_code_info[self.translator_utils.KEY_QUBITS]
+        if registered_qubits:   
+            last_qubit = next(reversed(registered_qubits.values()))
+            start_index = last_qubit["start_index"] + last_qubit["size"]
+        else:
+            start_index = 0
+
+        translated_code_info[self.translator_utils.KEY_QUBITS][var_id] = {"start_index": start_index, "size": qubit_amount}
         translated_code_info[self.translator_utils.KEY_VARS_REF][var_id] = var_id
 
         return translation
@@ -90,8 +96,14 @@ class DataTypeTranslator:
 
         translation = f"{var_id} = {init_value}"
 
-        translated_code_info[self.translator_utils.KEY_BITS]["amount"] += bit_amount
-        translated_code_info[self.translator_utils.KEY_BITS]["lines"].append(translation)
+        registered_bits = translated_code_info[self.translator_utils.KEY_BITS]
+        if registered_bits:   
+            last_bit = next(reversed(registered_bits.values()))
+            start_index = last_bit["start_index"] + last_bit["size"]
+        else:
+            start_index = 0
+
+        translated_code_info[self.translator_utils.KEY_BITS][var_id] = {"start_index": start_index, "size": bit_amount}
         translated_code_info[self.translator_utils.KEY_VARS_REF][var_id] = var_id
 
         return translation
@@ -260,10 +272,13 @@ class DataTypeTranslator:
 
     def translate_let(self, line, translated_code_info):
         '''
-        UC:
+        UCs:
         qubit[5] q;
         let my_var = q[1:4]
+        let my_var = q[{0,3,5}]     # It returns the first, fourth and sixth elements
         '''
+        # TODO:
+        # Implementar solucion para el ultimo UC
 
         eq_symbol_index = self.get_eq_symbol_index(line)
         
@@ -285,8 +300,6 @@ class STDGateTranslator:
     def __init__(self):
         self.translator_utils = TranslatorUtils()
 
-    # TODO:
-    # Mirar como saber cual qubit es el objetivo, pues en qsimov tenemos una lista con todos
     def translate_p(self, line, translated_code_info):
         pass
 

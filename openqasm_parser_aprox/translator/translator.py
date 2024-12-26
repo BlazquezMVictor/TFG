@@ -13,8 +13,8 @@ class Translator:
 
     def init_data_structures(self):
         self.translated_code_info = {
-            self.translator_utils.KEY_QUBITS:       {"amount": 0, "lines": []},
-            self.translator_utils.KEY_BITS:         {"amount": 0, "lines": []},
+            self.translator_utils.KEY_QUBITS:       {},
+            self.translator_utils.KEY_BITS:         {},
             self.translator_utils.KEY_CUSTOM_GATES: {"amount": 0, "lines": []},
             self.translator_utils.KEY_INSTRUCTIONS: {"amount": 0, "lines": []},
             self.translator_utils.KEY_VARS_REF:     {}

@@ -93,7 +93,7 @@ class TranslatorUtils:
             "cswap": "translate_cswap",
             "cu": "translate_cu",
             "U": "translate_u",
-            "gphase": "translate_gphase",
+            "gphase": "translate_gphase",   # TODO: Esto parece que es una builtin function
         }
         # TODO:
         # Traducir las gatee_operations
