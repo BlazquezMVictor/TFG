@@ -299,84 +299,241 @@ class DataTypeTranslator:
 class STDGateTranslator:
     def __init__(self):
         self.translator_utils = TranslatorUtils()
+        self.qc_name = "qc"
+
+    def get_angle(self, line):
+        read = False
+        angle = ""
+
+        for i in range(len(line)):
+            item = line[i]
+            if item == ")":     return angle, i + 1
+            if read:            angle += item
+            if item == "(":     read = True
+
+    def get_qubit(self, line):
+        name = line[0]
+        read = False
+        qubit_index = ""
+
+        for i in range(len(line)):
+            item = line[i]
+            if item == "]":     return name, qubit_index, i
+            if read:            qubit_index += item
+            if item == "[":     read = True
 
     def translate_p(self, line, translated_code_info):
-        pass
+        '''
+        UC:
+        p(pi) my_qubit;
+        '''
+
+        angle, line_index = self.get_angle(line)
+        qubit_name, qubit_index, line_index = self.get_qubit(line[line_index:])
+
+        qsimov_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][qubit_name]["start_index"] + qubit_index
+
+        return f"{self.qc_name}.add_operation(\"P({angle})\", targets={qsimov_qubit_index})"
+
 
     def translate_x(self, line, translated_code_info):
-        pass
+        '''
+        UC:
+        x my_qubit;
+        '''
+
+        qubit_name, qubit_index, line_index = self.get_qubit(line)
+
+        qsimov_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][qubit_name]["start_index"] + qubit_index
+
+        return f"{self.qc_name}.add_operation(\"X\", targets={qsimov_qubit_index})"
 
     def translate_y(self, line, translated_code_info):
-        pass
+        '''
+        UC:
+        y my_qubit;
+        '''
+
+        qubit_name, qubit_index, line_index = self.get_qubit(line)
+
+        qsimov_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][qubit_name]["start_index"] + qubit_index
+
+        return f"{self.qc_name}.add_operation(\"Y\", targets={qsimov_qubit_index})"
 
     def translate_z(self, line, translated_code_info):
-        pass
+        '''
+        UC:
+        z my_qubit;
+        '''
+
+        qubit_name, qubit_index, line_index = self.get_qubit(line)
+
+        qsimov_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][qubit_name]["start_index"] + qubit_index
+
+        return f"{self.qc_name}.add_operation(\"Z\", targets={qsimov_qubit_index})"
 
     def translate_h(self, line, translated_code_info):
-        pass
+        '''
+        UC:
+        h my_qubit;
+        '''
+
+        qubit_name, qubit_index, line_index = self.get_qubit(line)
+
+        qsimov_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][qubit_name]["start_index"] + qubit_index
+
+        return f"{self.qc_name}.add_operation(\"H\", targets={qsimov_qubit_index})"
 
     def translate_s(self, line, translated_code_info):
+        # Not in qsimov
         pass
 
     def translate_sdg(self, line, translated_code_info):
+        # Not in qsimov
         pass
 
     def translate_t(self, line, translated_code_info):
+        # Not in qsimov
         pass
 
     def translate_tdg(self, line, translated_code_info):
+        # Not in qsimov
         pass
 
     def translate_sx(self, line, translated_code_info):
-        pass
+        '''
+        UC:
+        sx my_qubit;
+        '''
+
+        qubit_name, qubit_index, line_index = self.get_qubit(line)
+
+        qsimov_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][qubit_name]["start_index"] + qubit_index
+
+        return f"{self.qc_name}.add_operation(\"sqrtX\", targets={qsimov_qubit_index})"
 
     def translate_rx(self, line, translated_code_info):
-        pass
+        '''
+        UC:
+        rx my_qubit;
+        '''
+
+        angle, line_index = self.get_angle(line)
+        qubit_name, qubit_index, line_index = self.get_qubit(line[line_index:])
+
+        qsimov_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][qubit_name]["start_index"] + qubit_index
+
+        return f"{self.qc_name}.add_operation(\"RX({angle})\", targets={qsimov_qubit_index})"
 
     def translate_ry(self, line, translated_code_info):
-        pass
+        '''
+        UC:
+        ry my_qubit;
+        '''
+
+        angle, line_index = self.get_angle(line)
+        qubit_name, qubit_index, line_index = self.get_qubit(line[line_index:])
+
+        qsimov_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][qubit_name]["start_index"] + qubit_index
+
+        return f"{self.qc_name}.add_operation(\"RY({angle})\", targets={qsimov_qubit_index})"
 
     def translate_rz(self, line, translated_code_info):
-        pass
+        '''
+        UC:
+        rz my_qubit;
+        '''
+
+        angle, line_index = self.get_angle(line)
+        qubit_name, qubit_index, line_index = self.get_qubit(line[line_index:])
+
+        qsimov_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][qubit_name]["start_index"] + qubit_index
+
+        return f"{self.qc_name}.add_operation(\"RZ({angle})\", targets={qsimov_qubit_index})"
 
     def translate_cx(self, line, translated_code_info):
-        pass
+        '''
+        UC:
+        cx my_qubit[0], my_qubit[1];
+        '''
+
+        control_qubit_name, control_qubit_index, line_index = self.get_qubit(line)
+        target_qubit_name, target_qubit_index, line_index = self.get_qubit(line[line_index:])
+
+        qsimov_control_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][control_qubit_name]["start_index"] + control_qubit_index
+        qsimov_target_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][target_qubit_name]["start_index"] + target_qubit_index
+
+        return f"{self.qc_name}.add_operation(\"X\", targets={qsimov_target_qubit_index}, controls={qsimov_control_qubit_index})"
 
     def translate_cy(self, line, translated_code_info):
-        pass
+        '''
+        UC:
+        cy my_qubit[0], my_qubit[1];
+        '''
+
+        control_qubit_name, control_qubit_index, line_index = self.get_qubit(line)
+        target_qubit_name, target_qubit_index, line_index = self.get_qubit(line[line_index:])
+
+        qsimov_control_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][control_qubit_name]["start_index"] + control_qubit_index
+        qsimov_target_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][target_qubit_name]["start_index"] + target_qubit_index
+
+        return f"{self.qc_name}.add_operation(\"Y\", targets={qsimov_target_qubit_index}, controls={qsimov_control_qubit_index})"
 
     def translate_cz(self, line, translated_code_info):
-        pass
+        '''
+        UC:
+        cz my_qubit[0], my_qubit[1];
+        '''
+
+        control_qubit_name, control_qubit_index, line_index = self.get_qubit(line)
+        target_qubit_name, target_qubit_index, line_index = self.get_qubit(line[line_index:])
+
+        qsimov_control_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][control_qubit_name]["start_index"] + control_qubit_index
+        qsimov_target_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][target_qubit_name]["start_index"] + target_qubit_index
+
+        return f"{self.qc_name}.add_operation(\"Z\", targets={qsimov_target_qubit_index}, controls={qsimov_control_qubit_index})"
 
     def translate_cp(self, line, translated_code_info):
+        # Not in qsimov
         pass
 
     def translate_crx(self, line, translated_code_info):
+        # Not in qsimov
         pass
 
     def translate_cry(self, line, translated_code_info):
+        # Not in qsimov
         pass
 
     def translate_crz(self, line, translated_code_info):
+        # Not in qsimov
         pass
 
     def translate_ch(self, line, translated_code_info):
+        # Not in qsimov
         pass
 
     def translate_swap(self, line, translated_code_info):
+        # SWAP
         pass
 
     def translate_ccx(self, line, translated_code_info):
+        # Not in qsimov
         pass
 
     def translate_cswap(self, line, translated_code_info):
+        # Not in qsimov
         pass
 
     def translate_cu(self, line, translated_code_info):
+        # Not in qsimov
         pass
 
     def translate_u(self, line, translated_code_info):
+        # U
         pass
 
     def translate_gphase(self, line, translated_code_info):
+        # TODO:
+        # Esto parece que es una builtin function
         pass
