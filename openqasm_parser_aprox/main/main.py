@@ -119,6 +119,7 @@ irrelevant_words = {
     ";",
     # "{",
     # "}",
+    ",",
     "<EOF>"
 }
 
@@ -220,6 +221,3 @@ if __name__ == "__main__":
 
             for line in translated_code:
                 print(f"L: {line}")
-
-        print(translator.translated_code_info[0])
-        print(translator.translated_code_info[1])
