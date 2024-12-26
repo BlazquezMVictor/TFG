@@ -18,8 +18,8 @@ os.system("cls")
 
 parsed_codes_folder = "ast_codes_parsed"
 # filename = "parser_code.txt"
-# filename = "parser_data_types.txt"
-filename = "parser_complex.txt"
+filename = "parser_data_types.txt"
+# filename = "parser_complex.txt"
 
 grammar_words = {
     "program",
@@ -117,8 +117,8 @@ grammar_words = {
 }
 irrelevant_words = {
     ";",
-    "{",
-    "}",
+    # "{",
+    # "}",
     "<EOF>"
 }
 
@@ -200,6 +200,8 @@ def get_relevant_info(code):
 
 # MAIN
 if __name__ == "__main__":
+    translate = True
+    # translate = False
     with open(MAIN_PARENT_PATH + "/" + parsed_codes_folder + "/" + filename, "r") as file:
         txt = file.read()
 
@@ -210,10 +212,14 @@ if __name__ == "__main__":
         result = remove_blank_spaces(result)
         result = get_relevant_info(result)
 
-        translated_code = translator.translate(result)
+        if not translate:
+            for line in result:
+                print(f"L: {line}")
+        else:
+            translated_code = translator.translate(result)
 
-        # for line in result:
-        #     print(f"L: {line}")
+            for line in translated_code:
+                print(f"L: {line}")
 
-        for line in translated_code:
-            print(f"L: {line}")
+        print(translator.translated_code_info[0])
+        print(translator.translated_code_info[1])
