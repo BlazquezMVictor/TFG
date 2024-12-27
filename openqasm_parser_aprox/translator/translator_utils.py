@@ -1,5 +1,5 @@
 import numpy as np
-
+from sympy.matrices import Matrix
 
 class TranslatorUtils:
     def __init__(self):
@@ -162,5 +162,4 @@ class TranslatorUtils:
         # Reconstruct the principal square root
         principal_sqrt = eigenvectors @ sqrt_eigenvalues @ np.linalg.inv(eigenvectors)
 
-        return principal_sqrt
-    
+        return Matrix(principal_sqrt)

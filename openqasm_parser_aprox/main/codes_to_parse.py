@@ -95,3 +95,48 @@ code = '''
     h io;
     output_qubit = measure io;  // should get zero
 '''
+
+U = '''
+include "stdgates.inc";
+
+stretch g;
+
+qubit[3] q;
+barrier q;
+cx q[0], q[1];
+delay[g] q[2];
+U(pi/4, 0, pi/2) q[2];
+delay[2*g] q[2];
+barrier q;
+'''
+
+stdgates = '''
+qubit my_qubit;
+qubit[3] my_qubits;
+
+p(pi) my_qubit;
+x my_qubit;
+y my_qubit;
+z my_qubit;
+h my_qubit;
+s my_qubit;
+sdg my_qubit;
+t my_qubit;
+tdg my_qubit;
+sx my_qubit;
+rx(pi) my_qubit;
+ry(pi) my_qubit;
+rz(pi) my_qubit;
+cx my_qubits[0], my_qubits[1];
+cy my_qubits[0], my_qubits[1];
+cz my_qubits[0], my_qubits[1];
+cp(pi) my_qubits[0], my_qubits[1];
+crx(pi) my_qubits[0], my_qubits[1];
+cry(pi) my_qubits[0], my_qubits[1];
+crz(pi) my_qubits[0], my_qubits[1];
+ch my_qubits[0], my_qubits[1];
+swap my_qubits[0], my_qubits[1];
+ccx my_qubits[0], my_qubits[1], my_qubits[2];
+cswap my_qubits[0], my_qubits[1], my_qubits[2];
+cu(0,0,pi,pi) my_qubits[0], my_qubits[1];
+'''
