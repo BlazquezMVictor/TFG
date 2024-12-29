@@ -421,7 +421,6 @@ class STDGateTranslator:
 
             return translation
             
-
     def translate_sdg(self, line, translated_code_info):
         '''
         UC:
@@ -702,10 +701,27 @@ class STDGateTranslator:
         return f"{self.QCircuit_name}.add_operation(\"SWAP\", targets=[{qsimov_target_qubit_index_1}, {qsimov_target_qubit_index_2}], controls={qsimov_control_qubit_index})"
 
     def translate_cu(self, line, translated_code_info):
-        # Not in qsimov
-        # TODO:
-        # Tiene cuatro parametros porque hace un angulo en la fase
-        pass
+        '''
+        UC:
+        cu(0,0,pi, pi) my_qubit[0], my_qubit[1];
+        '''
+
+        u_angle_1, line_index = self.get_angle(line, 1)
+        u_angle_2, line_index = self.get_angle(line, line_index)
+        u_angle_3, line_index = self.get_angle(line, line_index)
+        p_angle, line_index = self.get_angle(line, line_index)
+
+        control_qubit_name, control_qubit_index, line_index = self.get_qubit(line, line_index)
+        target_qubit_name, target_qubit_index, line_index = self.get_qubit(line, line_index)
+
+        qsimov_control_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][control_qubit_name]["start_index"] + control_qubit_index
+        qsimov_target_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][target_qubit_name]["start_index"] + target_qubit_index
+
+        translation = f"{self.QCircuit_name}.add_operation(\"P({p_angle} - {u_angle_1}/2)\", targets={qsimov_control_qubit_index})"
+        translation += "\n"
+        translation += f"{self.QCircuit_name}.add_operation(\"U({u_angle_1}, {u_angle_2}, {u_angle_3})\", targets={qsimov_target_qubit_index}, controls={qsimov_control_qubit_index})"
+
+        return translation
 
     def translate_u(self, line, translated_code_info):
         '''

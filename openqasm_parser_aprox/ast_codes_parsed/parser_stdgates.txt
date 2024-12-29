@@ -1,11 +1,11 @@
 program
-  statementOrScope    
+  statementOrScope
     statement
       includeStatement
-        include       
+        include
         "stdgates.inc"
         ;
-  statementOrScope    
+  statementOrScope
     statement
       quantumDeclarationStatement
         qubitType
@@ -488,5 +488,33 @@ program
                 expression
                   1
                 ]
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        U
+        (
+        expressionList
+          expression
+            expression
+              pi
+            /
+            expression
+              4
+          ,
+          expression
+            0
+          ,
+          expression
+            expression
+              pi
+            /
+            expression
+              2
+        )
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubit
         ;
   <EOF>
