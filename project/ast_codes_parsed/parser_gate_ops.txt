@@ -20,7 +20,19 @@ program
           designator
             [
             expression
-              3
+              4
+            ]
+        targets
+        ;
+  statementOrScope
+    statement
+      quantumDeclarationStatement
+        qubitType
+          qubit
+          designator
+            [
+            expression
+              4
             ]
         controls
         ;
@@ -30,6 +42,18 @@ program
         scalarType
           bit
         measurement
+        ;
+  statementOrScope
+    statement
+      classicalDeclarationStatement
+        scalarType
+          bit
+          designator
+            [
+            expression
+              4
+            ]
+        measurements
         ;
   statementOrScope
     statement
@@ -188,6 +212,40 @@ program
           gateOperand
             indexedIdentifier
               target
+        ;
+  statementOrScope
+    statement
+      assignmentStatement
+        indexedIdentifier
+          measurements
+          indexOperator
+            [
+            expression
+              2
+            ]
+        =
+        measureExpression
+          measure
+          gateOperand
+            indexedIdentifier
+              targets
+              indexOperator
+                [
+                expression
+                  3
+                ]
+        ;
+  statementOrScope
+    statement
+      assignmentStatement
+        indexedIdentifier
+          measurements
+        =
+        measureExpression
+          measure
+          gateOperand
+            indexedIdentifier
+              targets
         ;
   statementOrScope
     statement

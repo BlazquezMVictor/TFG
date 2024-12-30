@@ -27,6 +27,10 @@ class Translator:
             # Get the keyword of the instruction to know which kind of translation we have to do
             keyword = line[1][0]
 
+            # Check measurement
+            if "measure" in line[1]:
+                translation = self.gate_op_translator.translate_measure(line[1], self.translated_code_info)
+
             # Check data type
             if keyword in self.translator_utils.data_types:
                 # Get corresponding method for translation

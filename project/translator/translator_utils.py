@@ -98,10 +98,10 @@ class TranslatorUtils:
         # TODO:
         # Traducir las gatee_operations
         self.gate_operations = {
-            "ctrl": "translate_ctrl",     # 'ctrl @' indicates that the following gate is controlled -> ctrl @ rz(pi) q1, q2; q1 is control & q2 is target
-            "negctrl": "translate_negctrl",  # it is as 'ctrl' but uses 0 as activation bit instead of 1
-            "inv": "translate_inv",
-            "pow": "translate_pow",
+            "ctrl": "translate_mod",     # 'ctrl @' indicates that the following gate is controlled -> ctrl @ rz(pi) q1, q2; q1 is control & q2 is target
+            "negctrl": "translate_mod",  # it is as 'ctrl' but uses 0 as activation bit instead of 1
+            "inv": "translate_mod",
+            "pow": "translate_mod",
             "gate": "translate_gate",       # Puede ocupar mas de una linea
             "reset": "translate_reset",
             "measure": "translate_measure",

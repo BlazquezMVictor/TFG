@@ -203,8 +203,8 @@ def get_relevant_info(code):
 
 # MAIN
 if __name__ == "__main__":
-    # translate = True
-    translate = False
+    translate = True
+    # translate = False
     with open(MAIN_PARENT_PATH + "/" + parsed_codes_folder + "/" + filename, "r") as file:
         txt = file.read()
 
