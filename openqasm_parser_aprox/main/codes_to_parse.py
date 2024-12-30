@@ -127,3 +127,24 @@ cswap my_qubits[0], my_qubits[1], my_qubits[2];
 cu(0,0,pi,pi) my_qubits[0], my_qubits[1];
 U(pi/4, 0, pi/2) my_qubit;
 '''
+
+gate_operations = '''
+qubit target;
+qubit[3] controls;
+bit measurement;
+
+ctrl @ x controls[0], target;
+ctrl(2) @ x controls[0], controls[1], target;
+negctrl @ x controls[0], target;
+negctrl(2) @ x controls[0], controls[1], target;
+pow(2) @ sx target;
+reset target;
+measurement = measure target;
+barrier target;
+barrier controls;
+
+gate crz(pi) c, t {
+    ctrl @ rz(pi) c, t;
+}
+'''
+
