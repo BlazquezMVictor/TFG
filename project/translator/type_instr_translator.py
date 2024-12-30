@@ -1,9 +1,11 @@
 from .translator_utils import TranslatorUtils
 from sympy.matrices import Matrix
 
+translator_utils = TranslatorUtils()
+
 class DataTypeTranslator:
     def __init__(self):
-        self.translator_utils = TranslatorUtils()
+        translator_utils = TranslatorUtils()
 
     def get_eq_symbol_index(self, line):
         try:        return line.index("=")      # Get '=' occurence index
@@ -20,15 +22,15 @@ class DataTypeTranslator:
             if is_casting and item == "(":
                 is_casting = False
             
-            if item in self.translator_utils.data_types:
+            if item in translator_utils.data_types:
                 is_casting = True
                 if item == "angle": item = "float"
 
-            if item in self.translator_utils.builtin_constants:
-                item = self.translator_utils.builtin_constants[item]
+            if item in translator_utils.builtin_constants:
+                item = translator_utils.builtin_constants[item]
 
-            if item in self.translator_utils.builtin_functions:
-                item = self.translator_utils.builtin_functions[item]
+            if item in translator_utils.builtin_functions:
+                item = translator_utils.builtin_functions[item]
 
                 # We assume "real" and "imag" functions are only use with variables
                 if item == ".real" or item == ".imag":
@@ -37,7 +39,7 @@ class DataTypeTranslator:
                     # Adaptar las funciones de real e imag a python
                     # De momento se traduce como -> .real(my_var)
 
-            if item in self.translator_utils.math_operators:
+            if item in translator_utils.math_operators:
                 item = " " + item + " "
 
             if is_array and item == "{":
@@ -63,15 +65,15 @@ class DataTypeTranslator:
 
         translation = f"QRegistry({qubit_amount}) {var_id}"
 
-        registered_qubits = translated_code_info[self.translator_utils.KEY_QUBITS]
+        registered_qubits = translated_code_info[translator_utils.KEY_QUBITS]
         if registered_qubits:   
             last_qubit = next(reversed(registered_qubits.values()))
             start_index = last_qubit["start_index"] + last_qubit["size"]
         else:
             start_index = 0
 
-        translated_code_info[self.translator_utils.KEY_QUBITS][var_id] = {"start_index": start_index, "size": qubit_amount}
-        translated_code_info[self.translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_QUBITS][var_id] = {"start_index": start_index, "size": qubit_amount}
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
 
         return translation
 
@@ -97,15 +99,15 @@ class DataTypeTranslator:
 
         translation = f"{var_id} = {init_value}"
 
-        registered_bits = translated_code_info[self.translator_utils.KEY_BITS]
+        registered_bits = translated_code_info[translator_utils.KEY_BITS]
         if registered_bits:   
             last_bit = next(reversed(registered_bits.values()))
             start_index = last_bit["start_index"] + last_bit["size"]
         else:
             start_index = 0
 
-        translated_code_info[self.translator_utils.KEY_BITS][var_id] = {"start_index": start_index, "size": bit_amount}
-        translated_code_info[self.translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_BITS][var_id] = {"start_index": start_index, "size": bit_amount}
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
 
         return translation
 
@@ -128,9 +130,9 @@ class DataTypeTranslator:
 
         translation = f"{var_id}: int{init_value}"
 
-        translated_code_info[self.translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
-        translated_code_info[self.translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
-        translated_code_info[self.translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
+        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
 
         return translation
 
@@ -158,9 +160,9 @@ class DataTypeTranslator:
 
         translation = f"{var_id}: float{init_value}"
 
-        translated_code_info[self.translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
-        translated_code_info[self.translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
-        translated_code_info[self.translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
+        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
 
         return translation
 
@@ -183,9 +185,9 @@ class DataTypeTranslator:
 
         translation = f"{var_id}: complex{init_value}"
 
-        translated_code_info[self.translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
-        translated_code_info[self.translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
-        translated_code_info[self.translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
+        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
 
         return translation
 
@@ -207,9 +209,9 @@ class DataTypeTranslator:
 
         translation = f"{var_id}: bool{init_value}"
 
-        translated_code_info[self.translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
-        translated_code_info[self.translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
-        translated_code_info[self.translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
+        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
 
         return translation
 
@@ -231,9 +233,9 @@ class DataTypeTranslator:
 
         translation = f"{var_id}: {var_type}{init_value}"
 
-        translated_code_info[self.translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
-        translated_code_info[self.translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
-        translated_code_info[self.translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
+        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
 
         return translation
 
@@ -265,9 +267,9 @@ class DataTypeTranslator:
 
         translation = f"{var_id}: list{init_value}"
 
-        translated_code_info[self.translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
-        translated_code_info[self.translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
-        translated_code_info[self.translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
+        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
 
         return translation
 
@@ -291,15 +293,14 @@ class DataTypeTranslator:
 
         translation = f"{var_id}{init_value}"
 
-        translated_code_info[self.translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
-        translated_code_info[self.translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
-        translated_code_info[self.translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
+        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
 
         return translation
     
 class STDGateTranslator:
     def __init__(self):
-        self.translator_utils = TranslatorUtils()
         self.qsimov_name = "qj"
         self.QCircuit_name = "qc"
         self.S_matrix = Matrix([[1, 0], [0, 1j]])
@@ -339,13 +340,13 @@ class STDGateTranslator:
         return name, -1, i
     
     def get_indexes(self, qubit_name, qubit_index, translated_code_info):
-        qsimov_start_qb_index = translated_code_info[self.translator_utils.KEY_QUBITS][qubit_name]["start_index"]
+        qsimov_start_qb_index = translated_code_info[translator_utils.KEY_QUBITS][qubit_name]["start_index"]
 
         if qubit_index != -1:
             indexes = [qsimov_start_qb_index + qubit_index]
 
         else:
-            size_qb_reg = translated_code_info[self.translator_utils.KEY_QUBITS][qubit_name]["size"]
+            size_qb_reg = translated_code_info[translator_utils.KEY_QUBITS][qubit_name]["size"]
             indexes = [i for i in range(qsimov_start_qb_index, qsimov_start_qb_index + size_qb_reg)]
 
         return indexes
@@ -678,8 +679,8 @@ class STDGateTranslator:
         qubit_name_1, qubit_index_1, line_index = self.get_qubit(line, 0)
         qubit_name_2, qubit_index_2, _ = self.get_qubit(line, line_index)
 
-        qsimov_qubit_index_1 = translated_code_info[self.translator_utils.KEY_QUBITS][qubit_name_1]["start_index"] + qubit_index_1
-        qsimov_qubit_index_2 = translated_code_info[self.translator_utils.KEY_QUBITS][qubit_name_2]["start_index"] + qubit_index_2
+        qsimov_qubit_index_1 = translated_code_info[translator_utils.KEY_QUBITS][qubit_name_1]["start_index"] + qubit_index_1
+        qsimov_qubit_index_2 = translated_code_info[translator_utils.KEY_QUBITS][qubit_name_2]["start_index"] + qubit_index_2
 
         return f"{self.QCircuit_name}.add_operation(\"SWAP\", targets=[{qsimov_qubit_index_1},{qsimov_qubit_index_2}])"
 
@@ -710,9 +711,9 @@ class STDGateTranslator:
         target_qubit_name_1, target_qubit_index_1, line_index = self.get_qubit(line, line_index)
         target_qubit_name_2, target_qubit_index_2, _ = self.get_qubit(line, line_index)
 
-        qsimov_control_qubit_index = translated_code_info[self.translator_utils.KEY_QUBITS][control_qubit_name]["start_index"] + control_qubit_index_1
-        qsimov_target_qubit_index_1 = translated_code_info[self.translator_utils.KEY_QUBITS][target_qubit_name_1]["start_index"] + target_qubit_index_1
-        qsimov_target_qubit_index_2 = translated_code_info[self.translator_utils.KEY_QUBITS][target_qubit_name_2]["start_index"] + target_qubit_index_2
+        qsimov_control_qubit_index = translated_code_info[translator_utils.KEY_QUBITS][control_qubit_name]["start_index"] + control_qubit_index_1
+        qsimov_target_qubit_index_1 = translated_code_info[translator_utils.KEY_QUBITS][target_qubit_name_1]["start_index"] + target_qubit_index_1
+        qsimov_target_qubit_index_2 = translated_code_info[translator_utils.KEY_QUBITS][target_qubit_name_2]["start_index"] + target_qubit_index_2
 
         return f"{self.QCircuit_name}.add_operation(\"SWAP\", targets=[{qsimov_target_qubit_index_1}, {qsimov_target_qubit_index_2}], controls=[{qsimov_control_qubit_index}])"
 
@@ -755,4 +756,42 @@ class STDGateTranslator:
     def translate_gphase(self, line, translated_code_info):
         # TODO:
         # Esto parece que es una builtin function
+        pass
+
+class GateOperationTranslator:
+    def __init__(self):
+        pass
+
+    def get_controls_amount(self, line):
+        if line[0] == "@":  return 1, 1     # Returning index is 1 to avoid reading @ again
+
+        amount = ""
+
+        for i in range(len(line)):
+            item = line[i]
+            if item == ")":      return amount, i + 1     # +1 because of the ')'
+            amount += item
+
+    def translate_ctrl(self, line, translated_code_info):
+        controls_amount = self.get_controls_amount(line)
+
+    def translate_negctrl(self, line, translated_code_info):
+        pass
+
+    def translate_inv(self, line, translated_code_info):
+        pass
+
+    def translate_pow(self, line, translated_code_info):
+        pass
+
+    def translate_gate(self, line, translated_code_info):
+        pass
+
+    def translate_reset(self, line, translated_code_info):
+        pass
+
+    def translate_measure(self, line, translated_code_info):
+        pass
+
+    def translate_barrier(self, line, translated_code_info):
         pass

@@ -10,6 +10,7 @@ class Translator:
         self.translator_utils = TranslatorUtils()
         self.data_type_translator = DataTypeTranslator()
         self.std_gate_translator = STDGateTranslator()
+        self.gate_op_translator = GateOperationTranslator()
 
     def init_data_structures(self):
         self.translated_code_info = {
@@ -32,7 +33,6 @@ class Translator:
                 method = self.translator_utils.data_types[keyword]
                 # Translate the line without the keyword as it is not needed now
                 translation = getattr(self.data_type_translator, method)(line[1][1:], self.translated_code_info)
-                self.translated_code.append(translation)
 
             # Check std gate
             elif keyword in self.translator_utils.std_gates:
@@ -40,6 +40,14 @@ class Translator:
                 method = self.translator_utils.std_gates[keyword]
                 # Translate the line without the keyword as it is not needed now
                 translation = getattr(self.std_gate_translator, method)(line[1][1:], self.translated_code_info)
-                self.translated_code.append(translation)
+
+            # Check gate operation
+            elif keyword in self.translator_utils.gate_operations:
+                # Get corresponding method for translation
+                method = self.translator_utils.gate_operations[keyword]
+                # Translate the line without the keyword as it is not needed now
+                translation = getattr(self.gate_op_translator, method)(line[1][1:], self.translated_code_info)
+
+            self.translated_code.append(translation)
 
         return self.translated_code

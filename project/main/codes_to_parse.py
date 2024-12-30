@@ -179,13 +179,14 @@ U(pi/4, 0, pi/2) my_qubits;
 
 gate_operations = '''
 qubit target;
-qubit[3] controls;
+qubit[4] controls;
 bit measurement;
 
 ctrl @ x controls[0], target;
 ctrl(2) @ x controls[0], controls[1], target;
 negctrl @ x controls[0], target;
 negctrl(2) @ x controls[0], controls[1], target;
+inv @ x target;
 pow(2) @ sx target;
 reset target;
 measurement = measure target;
@@ -195,5 +196,10 @@ barrier controls;
 gate crz(pi) c, t {
     ctrl @ rz(pi) c, t;
 }
+crz(pi) controls[0], target;
+
+ctrl @ negctrl @ inv @ pow(2) @ x controls[0], controls[1], target;
+ctrl(2) @ negctrl(2) @ inv @ pow(2) @ x controls[0], controls[1], controls[2], controls[3], target;
+ctrl @ negctrl @ ctrl @ inv @ pow(2) @ x controls[0], controls[1], controls[2], target;
 '''
 
