@@ -101,31 +101,80 @@ qubit my_qubit;
 qubit[3] my_qubits;
 
 p(pi) my_qubit;
+p(pi) my_qubits;
+
 x my_qubit;
+x my_qubits;
+
 y my_qubit;
+y my_qubits;
+
 z my_qubit;
+z my_qubits;
+
 h my_qubit;
+h my_qubits;
+
 s my_qubit;
+s my_qubits;
+
 sdg my_qubit;
+sdg my_qubits;
+
 t my_qubit;
+t my_qubits;
+
 tdg my_qubit;
+tdg my_qubits;
+
 sx my_qubit;
+sx my_qubits;
+
 rx(pi) my_qubit;
+rx(pi) my_qubits;
+
 ry(pi) my_qubit;
+ry(pi) my_qubits;
+
 rz(pi) my_qubit;
+rz(pi) my_qubits;
+
 cx my_qubits[0], my_qubits[1];
+cx my_qubit, my_qubits;
+
 cy my_qubits[0], my_qubits[1];
+cy my_qubit, my_qubits;
+
 cz my_qubits[0], my_qubits[1];
+cz my_qubit, my_qubits;
+
 cp(pi) my_qubits[0], my_qubits[1];
+cp(pi) my_qubit, my_qubits;
+
 crx(pi) my_qubits[0], my_qubits[1];
+crx(pi) my_qubit, my_qubits;
+
 cry(pi) my_qubits[0], my_qubits[1];
+cry(pi) my_qubit, my_qubits;
+
 crz(pi) my_qubits[0], my_qubits[1];
+crz(pi) my_qubit, my_qubits;
+
 ch my_qubits[0], my_qubits[1];
+ch my_qubit, my_qubits;
+
 swap my_qubits[0], my_qubits[1];
+
 ccx my_qubits[0], my_qubits[1], my_qubits[2];
+ccx my_qubits[0], my_qubits[1], my_qubits;
+
 cswap my_qubits[0], my_qubits[1], my_qubits[2];
+
 cu(0,0,pi,pi) my_qubits[0], my_qubits[1];
+cu(0,0,pi,pi) my_qubit, my_qubits;
+
 U(pi/4, 0, pi/2) my_qubit;
+U(pi/4, 0, pi/2) my_qubits;
 '''
 
 gate_operations = '''

@@ -41,11 +41,34 @@ program
   statementOrScope
     statement
       gateCallStatement
+        p
+        (
+        expressionList
+          expression
+            pi
+        )
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
         x
         gateOperandList
           gateOperand
             indexedIdentifier
               my_qubit
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        x
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
         ;
   statementOrScope
     statement
@@ -59,11 +82,29 @@ program
   statementOrScope
     statement
       gateCallStatement
+        y
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
         z
         gateOperandList
           gateOperand
             indexedIdentifier
               my_qubit
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        z
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
         ;
   statementOrScope
     statement
@@ -77,11 +118,29 @@ program
   statementOrScope
     statement
       gateCallStatement
+        h
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
         s
         gateOperandList
           gateOperand
             indexedIdentifier
               my_qubit
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        s
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
         ;
   statementOrScope
     statement
@@ -95,11 +154,29 @@ program
   statementOrScope
     statement
       gateCallStatement
+        sdg
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
         t
         gateOperandList
           gateOperand
             indexedIdentifier
               my_qubit
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        t
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
         ;
   statementOrScope
     statement
@@ -113,6 +190,15 @@ program
   statementOrScope
     statement
       gateCallStatement
+        tdg
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
         sx
         gateOperandList
           gateOperand
@@ -122,7 +208,44 @@ program
   statementOrScope
     statement
       gateCallStatement
+        sx
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
         rx
+        (
+        expressionList
+          expression
+            pi
+        )
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubit
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        rx
+        (
+        expressionList
+          expression
+            pi
+        )
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        ry
         (
         expressionList
           expression
@@ -145,7 +268,7 @@ program
         gateOperandList
           gateOperand
             indexedIdentifier
-              my_qubit
+              my_qubits
         ;
   statementOrScope
     statement
@@ -160,6 +283,20 @@ program
           gateOperand
             indexedIdentifier
               my_qubit
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        rz
+        (
+        expressionList
+          expression
+            pi
+        )
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
         ;
   statementOrScope
     statement
@@ -187,6 +324,19 @@ program
   statementOrScope
     statement
       gateCallStatement
+        cx
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubit
+          ,
+          gateOperand
+            indexedIdentifier
+              my_qubits
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
         cy
         gateOperandList
           gateOperand
@@ -206,6 +356,19 @@ program
                 expression
                   1
                 ]
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        cy
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubit
+          ,
+          gateOperand
+            indexedIdentifier
+              my_qubits
         ;
   statementOrScope
     statement
@@ -233,7 +396,66 @@ program
   statementOrScope
     statement
       gateCallStatement
+        cz
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubit
+          ,
+          gateOperand
+            indexedIdentifier
+              my_qubits
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
         cp
+        (
+        expressionList
+          expression
+            pi
+        )
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
+              indexOperator
+                [
+                expression
+                  0
+                ]
+          ,
+          gateOperand
+            indexedIdentifier
+              my_qubits
+              indexOperator
+                [
+                expression
+                  1
+                ]
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        cp
+        (
+        expressionList
+          expression
+            pi
+        )
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubit
+          ,
+          gateOperand
+            indexedIdentifier
+              my_qubits
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        crx
         (
         expressionList
           expression
@@ -270,6 +492,24 @@ program
         gateOperandList
           gateOperand
             indexedIdentifier
+              my_qubit
+          ,
+          gateOperand
+            indexedIdentifier
+              my_qubits
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        cry
+        (
+        expressionList
+          expression
+            pi
+        )
+        gateOperandList
+          gateOperand
+            indexedIdentifier
               my_qubits
               indexOperator
                 [
@@ -290,6 +530,24 @@ program
     statement
       gateCallStatement
         cry
+        (
+        expressionList
+          expression
+            pi
+        )
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubit
+          ,
+          gateOperand
+            indexedIdentifier
+              my_qubits
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        crz
         (
         expressionList
           expression
@@ -326,21 +584,11 @@ program
         gateOperandList
           gateOperand
             indexedIdentifier
-              my_qubits
-              indexOperator
-                [
-                expression
-                  0
-                ]
+              my_qubit
           ,
           gateOperand
             indexedIdentifier
               my_qubits
-              indexOperator
-                [
-                expression
-                  1
-                ]
         ;
   statementOrScope
     statement
@@ -364,6 +612,19 @@ program
                 expression
                   1
                 ]
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        ch
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubit
+          ,
+          gateOperand
+            indexedIdentifier
+              my_qubits
         ;
   statementOrScope
     statement
@@ -419,6 +680,33 @@ program
                 expression
                   2
                 ]
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        ccx
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
+              indexOperator
+                [
+                expression
+                  0
+                ]
+          ,
+          gateOperand
+            indexedIdentifier
+              my_qubits
+              indexOperator
+                [
+                expression
+                  1
+                ]
+          ,
+          gateOperand
+            indexedIdentifier
+              my_qubits
         ;
   statementOrScope
     statement
@@ -492,6 +780,33 @@ program
   statementOrScope
     statement
       gateCallStatement
+        cu
+        (
+        expressionList
+          expression
+            0
+          ,
+          expression
+            0
+          ,
+          expression
+            pi
+          ,
+          expression
+            pi
+        )
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubit
+          ,
+          gateOperand
+            indexedIdentifier
+              my_qubits
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
         U
         (
         expressionList
@@ -516,5 +831,33 @@ program
           gateOperand
             indexedIdentifier
               my_qubit
+        ;
+  statementOrScope
+    statement
+      gateCallStatement
+        U
+        (
+        expressionList
+          expression
+            expression
+              pi
+            /
+            expression
+              4
+          ,
+          expression
+            0
+          ,
+          expression
+            expression
+              pi
+            /
+            expression
+              2
+        )
+        gateOperandList
+          gateOperand
+            indexedIdentifier
+              my_qubits
         ;
   <EOF>
