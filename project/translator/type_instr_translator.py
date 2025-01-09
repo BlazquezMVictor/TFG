@@ -1,3 +1,6 @@
+import numpy as np
+
+
 from .translator_utils import TranslatorUtils
 from sympy.matrices import Matrix
 from qsimov.connectors.parser import _gate_func
@@ -828,6 +831,19 @@ class GateOperationTranslator:
         gate_matrix = _gate_func[stdgates_open_to_qsimov[gate]]
         return gate_matrix.pow(int(exp))
     
+    def invert_gate(self, matrix):
+        # Verify that the input is square
+        if matrix.shape[0] != matrix.shape[1]:
+            raise ValueError("Input matrix must be square.")
+
+        # Compute the inverse
+        try:
+            inverse = np.linalg.inv(matrix)
+        except np.linalg.LinAlgError:
+            raise ValueError("Matrix is singular and cannot be inverted.")
+
+        return inverse
+    
     def get_modifiers(self, line, mod_anti_controls, mod_inv_pow):
         line_index = 0
         mod = line[0]
@@ -924,11 +940,11 @@ class GateOperationTranslator:
         self.get_q_c_controls_anticontrols(mod_anti_controls, mod_qu_bits, q_controls, c_controls, q_anticontrols, c_anticontrols)
 
         # Compute translation components
-        t_gate = f"\"{stdgates_open_to_qsimov[gate]}{gate_params}\"" if gate_params else f"\"{stdgates_open_to_qsimov[gate]}\""
-        t_controls = f", controls={q_controls}" if q_controls else ""
-        t_anticontrols = f", anticontrols={q_anticontrols}" if q_anticontrols else ""
-        t_c_controls = f", c_controls={c_controls}" if c_controls else ""
-        t_c_anticontrols = f", c_anticontrols={c_anticontrols}" if c_anticontrols else ""
+        t_gate = f"\"{stdgates_open_to_qsimov[gate]}{gate_params}\""    if gate_params      else f"\"{stdgates_open_to_qsimov[gate]}\""
+        t_controls = f", controls={q_controls}"                         if q_controls       else ""
+        t_anticontrols = f", anticontrols={q_anticontrols}"             if q_anticontrols   else ""
+        t_c_controls = f", c_controls={c_controls}"                     if c_controls       else ""
+        t_c_anticontrols = f", c_anticontrols={c_anticontrols}"         if c_anticontrols   else ""
 
         # Build the translation
         translation =  f"{QCircuit_name}.add_operation({t_gate}, targets={mod_qu_bits[-1][0]}{t_controls}"
