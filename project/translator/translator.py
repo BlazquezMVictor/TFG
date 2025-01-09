@@ -50,7 +50,7 @@ class Translator:
                 # Get corresponding method for translation
                 method = self.translator_utils.gate_operations[keyword]
                 # Translate the line without the keyword as it is not needed now
-                translation = getattr(self.gate_op_translator, method)(line[1][1:], self.translated_code_info)
+                translation = getattr(self.gate_op_translator, method)(line[1], self.translated_code_info)  # This time we maintain the keyword
 
             self.translated_code.append(translation)
 

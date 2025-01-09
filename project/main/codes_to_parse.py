@@ -208,3 +208,24 @@ ctrl(2) @ negctrl(2) @ inv @ pow(2) @ x controls[0], controls[1], controls[2], c
 ctrl @ negctrl @ ctrl @ inv @ pow(2) @ x controls[0], controls[1], controls[2], target;
 '''
 
+modifiers = '''
+qubit target;
+qubit[4] targets;
+qubit[4] controls;
+bit measurement;
+bit[4] measurements;
+
+ctrl @ x controls[0], target;
+ctrl(2) @ x controls[0], controls[1], target;
+negctrl @ x controls[0], target;
+negctrl(2) @ x controls[0], controls[1], target;
+inv @ x target;
+pow(2) @ sx target;
+
+ctrl @ negctrl @ inv @ pow(2) @ x controls[0], controls[1], target;
+ctrl(2) @ negctrl(2) @ inv @ pow(2) @ x controls[0], controls[1], controls[2], controls[3], target;
+ctrl @ negctrl @ ctrl @ inv @ pow(2) @ x controls[0], controls[1], controls[2], target;
+
+ctrl @ negctrl(2) @ negctrl @ ctrl(2) @ x measurement, measurements[0], measurements[1], target, controls[0], controls[1], targets[0];
+'''
+

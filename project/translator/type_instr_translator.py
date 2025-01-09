@@ -1,9 +1,50 @@
 from .translator_utils import TranslatorUtils
 from sympy.matrices import Matrix
+from qsimov.connectors.parser import _gate_func
 
 translator_utils = TranslatorUtils()
 qsimov_name = "qj"
 QCircuit_name = "qc"
+stdgates_open_to_qsimov = {
+    "p": "P",
+    "x": "X",
+    "y": "Y",
+    "z": "Z",
+    "h": "H",
+    "s": "S",
+    "sdg": "S-1",
+    "t": "T",
+    "tdg": "T-1",
+    "sx": "SqrtX",
+    "rx": "RX",
+    "ry": "RY",
+    "rz": "RZ",
+    "swap": "SWAP",
+    "cx": "X",
+    "cy": "Y",
+    "cz": "CZ",
+    "cp": "P",
+    "crx": "RX",
+    "cry": "RY",
+    "crz": "RZ",
+    "ch": "H",
+    "ccx": "X",
+    "cswap": "SWAP",
+    "cu": "U",
+    "U": "U"
+}
+stdgates_with_params = {
+    "p": 1,
+    "rx": 1,
+    "ry": 1,
+    "rz": 1,
+    "cp": 1,
+    "crx": 1,
+    "cry": 1,
+    "crz": 1,
+    "cu": 4,
+    "U": 3
+}
 
 def get_param(line, line_index):
     param = ""
@@ -20,6 +61,7 @@ def get_qu_bit(line, line_index):
 
     for i in range(line_index, len(line)):
         item = line[i]
+        if item  == ",":    break
         if item == "]":     return name, int(qu_bit_index), i + 2    # +2 because of the ']' and the following ','
         if read:            qu_bit_index += item
         if item == "[":     read = True
@@ -337,6 +379,8 @@ class DataTypeTranslator:
 
 # TODO:
 # mirar que tambien se acepte qubit[2:4] etc
+# TODO:
+# cambiar el nombre de las puertas y usar el diccionario 'stdgates_open_to_qsimov'
 class STDGateTranslator:
     def __init__(self):
         self.qsimov_name = "qj"
@@ -767,26 +811,161 @@ class GateOperationTranslator:
     def __init__(self):
         pass
 
-    def get_controls_amount(self, line):
-        if line[0] == "@":  return 1, 1     # Returning index is 1 to avoid reading @ again
+    def get_mod_param(self, line, line_index):
+        param = ""
+        read = False
 
-        amount = ""
-
-        for i in range(len(line)):
+        for i in range(line_index, len(line)):
             item = line[i]
-            if item == ")":      return amount, i + 1     # +1 because of the ')'
-            amount += item
+            if item == "@":     break
+            if item == ")":     return int(param), i + 2     # +1 because of the ')' and the '@'
+            if read:            param += item
+            if item == "(":     read = True
 
+        return 1, line_index + 2
+
+    def pow_gate(self, exp, gate):
+        gate_matrix = _gate_func[stdgates_open_to_qsimov[gate]]
+        return gate_matrix.pow(int(exp))
+    
+    def get_modifiers(self, line, mod_anti_controls, mod_inv_pow):
+        line_index = 0
+        mod = line[0]
+        while mod in translator_utils.gate_operations:
+            param, line_index = self.get_mod_param(line, line_index)
+
+            if mod == "ctrl" or mod == "negctrl":
+                mod_anti_controls.append((mod, param))
+
+            else:
+                mod_inv_pow.append((mod, param))
+
+            mod = line[line_index]
+
+        # Remember the gate to apply
+        gate = mod
+        line_index += 1
+
+        return gate, line_index
+    
+    def get_gate_params(self, gate, line, line_index):
+        gate_params = []
+
+        if gate in stdgates_with_params:
+            line_index += 1
+            for i in range(stdgates_with_params[gate]):
+                param, line_index = get_param(line,line_index)
+                gate_params.append(param)
+
+        return tuple(gate_params), line_index
+    
+    def get_mod_qu_bits(self, line, line_index, mod_qu_bits, translated_code_info):
+        while line_index < len(line):
+            qubit_name, qubit_index, line_index = get_qu_bit(line, line_index)
+
+            if qubit_name in translated_code_info[translator_utils.KEY_QUBITS]:     key = translator_utils.KEY_QUBITS
+            else:                                                                   key = translator_utils.KEY_BITS
+
+            qubits = get_indexes(key, qubit_name, qubit_index, translated_code_info)
+
+            mod_qu_bits.append((qubits, key))
+
+        return line_index
+    
+    def get_q_c_controls_anticontrols(self, mod_anti_controls, mod_qu_bits, q_controls, c_controls, q_anticontrols, c_anticontrols):
+        i = 0
+        for mod, param in mod_anti_controls:
+            param += i
+            if mod == "ctrl":
+                for qu_bit in mod_qu_bits[i:param]:
+                    if qu_bit[1] == translator_utils.KEY_QUBITS:
+                        q_controls += qu_bit[0]
+                    else:
+                        c_controls += qu_bit[0]
+
+            if mod == "negctrl":
+                for qu_bit in mod_qu_bits[i:param]:
+                    if qu_bit[1] == translator_utils.KEY_QUBITS:
+                        q_anticontrols += qu_bit[0]
+                    else:
+                        c_anticontrols += qu_bit[0]
+
+            i = param
+    
+    # TODO:
+    # permitir el uso de puertas propias del usuario (gate my_gate ...)
     def translate_mod(self, line, translated_code_info):
-        pass
+        '''
+        UCs:
+        
+        ctrl @ negctrl @ inv @ pow(2) @ x controls[0], controls[1], target;
+        ctrl(2) @ negctrl(2) @ inv @ pow(2) @ x controls[0], controls[1], controls[2], controls[3], target;
+        ctrl @ negctrl @ ctrl @ inv @ pow(2) @ x controls[0], controls[1], controls[2], target;
+        '''
+
+        mod_inv_pow = []
+        mod_anti_controls = []
+        mod_qu_bits = []
+        q_controls = []
+        q_anticontrols = []
+        c_controls = []
+        c_anticontrols = []
+
+        # Get in order the modifiers and put them in its corresponding list
+        gate, line_index = self.get_modifiers(line, mod_anti_controls, mod_inv_pow)
+
+        # Get the gate's parameters, if it has
+        gate_params, line_index = self.get_gate_params(gate, line, line_index)
+
+        # Get in order the qubits/bits used as controls or anticontrols
+        line_index = self.get_mod_qu_bits(line, line_index, mod_qu_bits, translated_code_info)
+
+        # Differentiate between q/c controls/anticontrols according to the order of the modifiers
+        self.get_q_c_controls_anticontrols(mod_anti_controls, mod_qu_bits, q_controls, c_controls, q_anticontrols, c_anticontrols)
+
+        # Compute translation components
+        t_gate = f"\"{stdgates_open_to_qsimov[gate]}{gate_params}\"" if gate_params else f"\"{stdgates_open_to_qsimov[gate]}\""
+        t_controls = f", controls={q_controls}" if q_controls else ""
+        t_anticontrols = f", anticontrols={q_anticontrols}" if q_anticontrols else ""
+        t_c_controls = f", c_controls={c_controls}" if c_controls else ""
+        t_c_anticontrols = f", c_anticontrols={c_anticontrols}" if c_anticontrols else ""
+
+        # Build the translation
+        translation =  f"{QCircuit_name}.add_operation({t_gate}, targets={mod_qu_bits[-1][0]}{t_controls}"
+        translation += f"{t_anticontrols}{t_c_controls}{t_c_anticontrols})"
+
+        # TODO:
+        # terminar con los modificadores 'inv' y 'pow'
+
+        return translation
 
     def translate_gate(self, line, translated_code_info):
-        pass
+        '''
+        UC:
+
+        gate crz(pi) c, t {
+            ctrl @ rz(pi) c, t;
+        }
+        crz(pi) controls[0], target;
+        '''
 
     def translate_reset(self, line, translated_code_info):
-        pass
+        '''
+        UC:
+
+        reset target;
+        reset targets[0];
+        reset targets;
+        '''
 
     def translate_measure(self, line, translated_code_info):
+        '''
+        UC:
+        
+        measurement = measure target;
+        measurements[2] = measure targets[0];
+        measurements = measure targets;
+        '''
         bits_name, bits_index, line_index = get_qu_bit(line, 0)
         qubits_name, qubits_index, _ = get_qu_bit(line, line_index + 1)     # +1 to line_index to avoid "measure" keyword
 
@@ -796,6 +975,13 @@ class GateOperationTranslator:
         return f"{QCircuit_name}.add_operation(\"MEASURE\", targets={qubits}, outputs={bits})"
 
     def translate_barrier(self, line, translated_code_info):
+        '''
+        UCs:
+
+        barrier target;
+        barrier controls[0];
+        barrier controls;
+        '''
         # reg_name, reg_index, _ = get_qu_bit(line, 0)
 
         # if reg_name in translated_code_info[translator_utils.KEY_QUBITS]:   key = translator_utils.KEY_QUBITS
