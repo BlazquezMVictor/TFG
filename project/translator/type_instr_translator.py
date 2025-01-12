@@ -6,8 +6,6 @@ from sympy.matrices import Matrix
 from qsimov.connectors.parser import _gate_func
 
 translator_utils = TranslatorUtils()
-qsimov_name = "qj"
-QCircuit_name = "qc"
 stdgates_open_to_qsimov = {
     "p": "P",
     "x": "X",
@@ -25,7 +23,7 @@ stdgates_open_to_qsimov = {
     "swap": "SWAP",
     "cx": "X",
     "cy": "Y",
-    "cz": "CZ",
+    "cz": "z",
     "cp": "P",
     "crx": "RX",
     "cry": "RY",
@@ -48,6 +46,7 @@ stdgates_with_params = {
     "cu": 4,
     "U": 3
 }
+custom_gate_qargs = {}
 
 def get_param(line, line_index):
     param = ""
@@ -58,30 +57,39 @@ def get_param(line, line_index):
         param += item
 
 def get_qu_bit(line, line_index):
-    name = line[line_index]
-    read = False
-    qu_bit_index = ""
+        name = line[line_index]
 
-    for i in range(line_index, len(line)):
-        item = line[i]
-        if item  == ",":    break
-        if item == "]":     return name, int(qu_bit_index), i + 2    # +2 because of the ']' and the following ','
-        if read:            qu_bit_index += item
-        if item == "[":     read = True
+        if TranslatorUtils.is_custom_gate:      return name, -1, line_index + 2
 
-    return name, -1, line_index + 2
+        read = False
+        qu_bit_index = ""
+
+        for i in range(line_index, len(line)):
+            item = line[i]
+            if item  == ",":    break
+            if item == "]":     return name, int(qu_bit_index), i + 2    # +2 because of the ']' and the following ','
+            if read:            qu_bit_index += item
+            if item == "[":     read = True
+
+        return name, -1, line_index + 2
 
 def get_indexes(key, name, index, translated_code_info):
-    qsimov_start_index = translated_code_info[key][name]["start_index"]
+    global custom_gate_qargs
 
-    if index != -1:
-        indexes = [qsimov_start_index + index]
+    if not TranslatorUtils.is_custom_gate:
+        qsimov_start_index = translated_code_info[key][name]["start_index"]
 
+        if index != -1:
+            indexes = [qsimov_start_index + index]
+
+        else:
+            size_reg = translated_code_info[key][name]["size"]
+            indexes = [i for i in range(qsimov_start_index, qsimov_start_index + size_reg)]
+
+        return indexes
+    
     else:
-        size_reg = translated_code_info[key][name]["size"]
-        indexes = [i for i in range(qsimov_start_index, qsimov_start_index + size_reg)]
-
-    return indexes
+        return [custom_gate_qargs[name]]        # Return as list to keep format from normal flow
 
 class DataTypeTranslator:
     def __init__(self):
@@ -165,17 +173,18 @@ class DataTypeTranslator:
         bit[8] my_var;
         bit[8] my_var = "00001111";
         '''
-        # TODO:
-        # Mirar que cuando es solo un qubit no se genere como una lista
+
         bit_amount = 1
         if line[0] == "[":   bit_amount = int(line[1])
         eq_symbol_index = self.get_eq_symbol_index(line)
         var_id = line[eq_symbol_index - 1]
 
         if eq_symbol_index == 0:
-            init_value = [0 for i in range(bit_amount)]
+            if bit_amount > 1:      init_value = [0 for i in range(bit_amount)]
+            else:                   init_value = 0
         else:
-            init_value = [int(char) for char in line[eq_symbol_index + 1] if char.isdigit()]
+            if bit_amount > 1:      init_value = [int(char) for char in line[eq_symbol_index + 1] if char.isdigit()]
+            else:                   init_value = line[eq_symbol_index + 1][1]       # We get the number without the '"', that is why we add '[1]' at the end
 
         translation = f"{var_id} = {init_value}"
 
@@ -386,8 +395,6 @@ class DataTypeTranslator:
 # cambiar el nombre de las puertas y usar el diccionario 'stdgates_open_to_qsimov'
 class STDGateTranslator:
     def __init__(self):
-        self.qsimov_name = "qj"
-        self.QCircuit_name = "qc"
         self.S_matrix = Matrix([[1, 0], [0, 1j]])
         self.T_matrix = Matrix([[1, 0], [0, 0.70710678 + 0.70710678j]])
         self.is_S_implemented = False
@@ -417,7 +424,9 @@ class STDGateTranslator:
 
         targets = get_indexes(translator_utils.KEY_QUBITS, qubit_name, qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"P({angle})\", targets={targets})"
+        qsimov_gate = stdgates_open_to_qsimov["p"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}({angle})\", targets={targets})"
 
     def translate_x(self, line, translated_code_info):
         '''
@@ -429,7 +438,9 @@ class STDGateTranslator:
 
         targets = get_indexes(translator_utils.KEY_QUBITS, qubit_name, qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"X\", targets={targets})"
+        qsimov_gate = stdgates_open_to_qsimov["x"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}\", targets={targets})"
 
     def translate_y(self, line, translated_code_info):
         '''
@@ -441,7 +452,9 @@ class STDGateTranslator:
 
         targets = get_indexes(translator_utils.KEY_QUBITS, qubit_name, qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"Y\", targets={targets})"
+        qsimov_gate = stdgates_open_to_qsimov["y"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}\", targets={targets})"
 
     def translate_z(self, line, translated_code_info):
         '''
@@ -453,7 +466,9 @@ class STDGateTranslator:
 
         targets = get_indexes(translator_utils.KEY_QUBITS, qubit_name, qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"Z\", targets={targets})"
+        qsimov_gate = stdgates_open_to_qsimov["z"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}\", targets={targets})"
 
     def translate_h(self, line, translated_code_info):
         '''
@@ -465,7 +480,9 @@ class STDGateTranslator:
 
         targets = get_indexes(translator_utils.KEY_QUBITS, qubit_name, qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"H\", targets={targets})"
+        qsimov_gate = stdgates_open_to_qsimov["h"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}\", targets={targets})"
 
     def translate_s(self, line, translated_code_info):
         '''
@@ -478,14 +495,14 @@ class STDGateTranslator:
         targets = get_indexes(translator_utils.KEY_QUBITS, qubit_name, qubit_index, translated_code_info)
 
         if self.is_S_implemented:
-            return f"{self.QCircuit_name}.add_operation(\"{self.S_gate_name}\", targets={targets})"
+            return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{self.S_gate_name}\", targets={targets})"
         
         else:
             self.is_S_implemented = True
             
-            translation =   f"{self.qsimov_name}.add_gate(\"{self.S_gate_name}\", {self.get_S_matrix}, 0, 0, aliases={self.S_gate_aliases})"
+            translation =   f"{TranslatorUtils.qsimov_name}.add_gate(\"{self.S_gate_name}\", {self.get_S_matrix}, 0, 0, aliases={self.S_gate_aliases})"
             translation += "\n"
-            translation += f"{self.QCircuit_name}.add_operation(\"{self.S_gate_name}\", targets={targets})"
+            translation += f"{TranslatorUtils.QCircuit_name}.add_operation(\"{self.S_gate_name}\", targets={targets})"
 
             return translation
             
@@ -500,14 +517,14 @@ class STDGateTranslator:
         targets = get_indexes(translator_utils.KEY_QUBITS, qubit_name, qubit_index, translated_code_info)
 
         if self.is_S_implemented:
-            return f"{self.QCircuit_name}.add_operation(\"{self.S_gate_name}-1\", targets={targets})"
+            return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{self.S_gate_name}-1\", targets={targets})"
         
         else:
             self.is_S_implemented = True
 
-            translation =   f"{self.qsimov_name}.add_gate(\"{self.S_gate_name}\", {self.get_S_matrix}, 0, 0, aliases={self.S_gate_aliases})"
+            translation =   f"{TranslatorUtils.qsimov_name}.add_gate(\"{self.S_gate_name}\", {self.get_S_matrix}, 0, 0, aliases={self.S_gate_aliases})"
             translation += "\n"
-            translation += f"{self.QCircuit_name}.add_operation(\"{self.S_gate_name}-1\", targets={targets})"
+            translation += f"{TranslatorUtils.QCircuit_name}.add_operation(\"{self.S_gate_name}-1\", targets={targets})"
 
             return translation
 
@@ -522,14 +539,14 @@ class STDGateTranslator:
         targets = get_indexes(translator_utils.KEY_QUBITS, qubit_name, qubit_index, translated_code_info)
 
         if self.is_T_implemented:
-            return f"{self.QCircuit_name}.add_operation(\"{self.T_gate_name}\", targets={targets})"
+            return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{self.T_gate_name}\", targets={targets})"
         
         else:
             self.is_T_implemented = True
 
-            translation =   f"{self.qsimov_name}.add_gate(\"{self.T_gate_name}\", {self.get_T_matrix}, 0, 0, aliases={self.T_gate_aliases})"
+            translation =   f"{TranslatorUtils.qsimov_name}.add_gate(\"{self.T_gate_name}\", {self.get_T_matrix}, 0, 0, aliases={self.T_gate_aliases})"
             translation += "\n"
-            translation += f"{self.QCircuit_name}.add_operation(\"{self.T_gate_name}\", targets={targets})"
+            translation += f"{TranslatorUtils.QCircuit_name}.add_operation(\"{self.T_gate_name}\", targets={targets})"
 
             return translation
 
@@ -544,14 +561,14 @@ class STDGateTranslator:
         targets = get_indexes(translator_utils.KEY_QUBITS, qubit_name, qubit_index, translated_code_info)
 
         if self.is_T_implemented:
-            return f"{self.QCircuit_name}.add_operation(\"{self.T_gate_name}-1\", targets={targets})"
+            return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{self.T_gate_name}-1\", targets={targets})"
         
         else:
             self.is_T_implemented = True
 
-            translation =   f"{self.qsimov_name}.add_gate(\"{self.T_gate_name}\", {self.get_T_matrix}, 0, 0, aliases={self.T_gate_aliases})"
+            translation =   f"{TranslatorUtils.qsimov_name}.add_gate(\"{self.T_gate_name}\", {self.get_T_matrix}, 0, 0, aliases={self.T_gate_aliases})"
             translation += "\n"
-            translation += f"{self.QCircuit_name}.add_operation(\"{self.T_gate_name}-1\", targets={targets})"
+            translation += f"{TranslatorUtils.QCircuit_name}.add_operation(\"{self.T_gate_name}-1\", targets={targets})"
 
             return translation
 
@@ -565,7 +582,9 @@ class STDGateTranslator:
 
         targets = get_indexes(translator_utils.KEY_QUBITS, qubit_name, qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"sqrtX\", targets={targets})"
+        qsimov_gate = stdgates_open_to_qsimov["sx"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}\", targets={targets})"
 
     def translate_rx(self, line, translated_code_info):
         '''
@@ -578,7 +597,9 @@ class STDGateTranslator:
 
         targets = get_indexes(translator_utils.KEY_QUBITS, qubit_name, qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"RX({angle})\", targets={targets})"
+        qsimov_gate = stdgates_open_to_qsimov["rx"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}({angle})\", targets={targets})"
 
     def translate_ry(self, line, translated_code_info):
         '''
@@ -591,7 +612,9 @@ class STDGateTranslator:
 
         targets = get_indexes(translator_utils.KEY_QUBITS, qubit_name, qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"RY({angle})\", targets={targets})"
+        qsimov_gate = stdgates_open_to_qsimov["ry"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}({angle})\", targets={targets})"
 
     def translate_rz(self, line, translated_code_info):
         '''
@@ -604,7 +627,9 @@ class STDGateTranslator:
 
         targets = get_indexes(translator_utils.KEY_QUBITS, qubit_name, qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"RZ({angle})\", targets={targets})"
+        qsimov_gate = stdgates_open_to_qsimov["rz"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}({angle})\", targets={targets})"
 
     def translate_cx(self, line, translated_code_info):
         '''
@@ -618,7 +643,9 @@ class STDGateTranslator:
         controls = get_indexes(translator_utils.KEY_QUBITS, control_qubit_name, control_qubit_index, translated_code_info)
         targets = get_indexes(translator_utils.KEY_QUBITS, target_qubit_name, target_qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"X\", targets={targets}, controls={controls})"
+        qsimov_gate = stdgates_open_to_qsimov["cx"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}\", targets={targets}, controls={controls})"
 
     def translate_cy(self, line, translated_code_info):
         '''
@@ -632,7 +659,9 @@ class STDGateTranslator:
         controls = get_indexes(translator_utils.KEY_QUBITS, control_qubit_name, control_qubit_index, translated_code_info)
         targets = get_indexes(translator_utils.KEY_QUBITS, target_qubit_name, target_qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"Y\", targets={targets}, controls={controls})"
+        qsimov_gate = stdgates_open_to_qsimov["cy"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}\", targets={targets}, controls={controls})"
 
     def translate_cz(self, line, translated_code_info):
         '''
@@ -646,7 +675,9 @@ class STDGateTranslator:
         controls = get_indexes(translator_utils.KEY_QUBITS, control_qubit_name, control_qubit_index, translated_code_info)
         targets = get_indexes(translator_utils.KEY_QUBITS, target_qubit_name, target_qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"Z\", targets={targets}, controls={controls})"
+        qsimov_gate = stdgates_open_to_qsimov["cz"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}\", targets={targets}, controls={controls})"
 
     def translate_cp(self, line, translated_code_info):
         '''
@@ -661,7 +692,9 @@ class STDGateTranslator:
         controls = get_indexes(translator_utils.KEY_QUBITS, control_qubit_name, control_qubit_index, translated_code_info)
         targets = get_indexes(translator_utils.KEY_QUBITS, target_qubit_name, target_qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"P({angle})\", targets={targets}, controls={controls})"
+        qsimov_gate = stdgates_open_to_qsimov["cp"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}({angle})\", targets={targets}, controls={controls})"
 
     def translate_crx(self, line, translated_code_info):
         '''
@@ -676,7 +709,9 @@ class STDGateTranslator:
         controls = get_indexes(translator_utils.KEY_QUBITS, control_qubit_name, control_qubit_index, translated_code_info)
         targets = get_indexes(translator_utils.KEY_QUBITS, target_qubit_name, target_qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"RX({angle})\", targets={targets}, controls={controls})"
+        qsimov_gate = stdgates_open_to_qsimov["crx"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}({angle})\", targets={targets}, controls={controls})"
 
     def translate_cry(self, line, translated_code_info):
         '''
@@ -691,7 +726,9 @@ class STDGateTranslator:
         controls = get_indexes(translator_utils.KEY_QUBITS, control_qubit_name, control_qubit_index, translated_code_info)
         targets = get_indexes(translator_utils.KEY_QUBITS, target_qubit_name, target_qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"RY({angle})\", targets={targets}, controls={controls})"
+        qsimov_gate = stdgates_open_to_qsimov["cry"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}({angle})\", targets={targets}, controls={controls})"
 
     def translate_crz(self, line, translated_code_info):
         '''
@@ -706,7 +743,9 @@ class STDGateTranslator:
         controls = get_indexes(translator_utils.KEY_QUBITS, control_qubit_name, control_qubit_index, translated_code_info)
         targets = get_indexes(translator_utils.KEY_QUBITS, target_qubit_name, target_qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"RZ({angle})\", targets={targets}, controls={controls})"
+        qsimov_gate = stdgates_open_to_qsimov["crz"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}({angle})\", targets={targets}, controls={controls})"
 
     def translate_ch(self, line, translated_code_info):
         '''
@@ -720,7 +759,9 @@ class STDGateTranslator:
         controls = get_indexes(translator_utils.KEY_QUBITS, control_qubit_name, control_qubit_index, translated_code_info)
         targets = get_indexes(translator_utils.KEY_QUBITS, target_qubit_name, target_qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"H\", targets={targets}, controls={controls})"
+        qsimov_gate = stdgates_open_to_qsimov["ch"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}\", targets={targets}, controls={controls})"
 
     def translate_swap(self, line, translated_code_info):
         '''
@@ -734,7 +775,9 @@ class STDGateTranslator:
         qsimov_qubit_index_1 = translated_code_info[translator_utils.KEY_QUBITS][qubit_name_1]["start_index"] + qubit_index_1
         qsimov_qubit_index_2 = translated_code_info[translator_utils.KEY_QUBITS][qubit_name_2]["start_index"] + qubit_index_2
 
-        return f"{self.QCircuit_name}.add_operation(\"SWAP\", targets=[{qsimov_qubit_index_1},{qsimov_qubit_index_2}])"
+        qsimov_gate = stdgates_open_to_qsimov["swap"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}\", targets=[{qsimov_qubit_index_1},{qsimov_qubit_index_2}])"
 
     def translate_ccx(self, line, translated_code_info):
         '''
@@ -751,7 +794,9 @@ class STDGateTranslator:
         controls = controls_1 + controls_2
         targets = get_indexes(translator_utils.KEY_QUBITS, target_qubit_name, target_qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"X\", targets={targets}, controls={controls})"
+        qsimov_gate = stdgates_open_to_qsimov["ccx"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}\", targets={targets}, controls={controls})"
 
     def translate_cswap(self, line, translated_code_info):
         '''
@@ -767,7 +812,9 @@ class STDGateTranslator:
         qsimov_target_qubit_index_1 = translated_code_info[translator_utils.KEY_QUBITS][target_qubit_name_1]["start_index"] + target_qubit_index_1
         qsimov_target_qubit_index_2 = translated_code_info[translator_utils.KEY_QUBITS][target_qubit_name_2]["start_index"] + target_qubit_index_2
 
-        return f"{self.QCircuit_name}.add_operation(\"SWAP\", targets=[{qsimov_target_qubit_index_1}, {qsimov_target_qubit_index_2}], controls=[{qsimov_control_qubit_index}])"
+        qsimov_gate = stdgates_open_to_qsimov["cswap"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}\", targets=[{qsimov_target_qubit_index_1}, {qsimov_target_qubit_index_2}], controls=[{qsimov_control_qubit_index}])"
 
     def translate_cu(self, line, translated_code_info):
         '''
@@ -785,9 +832,12 @@ class STDGateTranslator:
         controls = get_indexes(translator_utils.KEY_QUBITS, control_qubit_name, control_qubit_index, translated_code_info)
         targets = get_indexes(translator_utils.KEY_QUBITS, target_qubit_name, target_qubit_index, translated_code_info)
 
-        translation = f"{self.QCircuit_name}.add_operation(\"P({p_angle} - {u_angle_1}/2)\", targets={controls})"
+        qsimov_gate_p = stdgates_open_to_qsimov["p"]
+        qsimov_gate_u = stdgates_open_to_qsimov["U"]
+
+        translation = f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate_p}({p_angle} - {u_angle_1}/2)\", targets={controls})"
         translation += "\n"
-        translation += f"{self.QCircuit_name}.add_operation(\"U({u_angle_1}, {u_angle_2}, {u_angle_3})\", targets={targets}, controls={controls})"
+        translation += f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate_u}({u_angle_1}, {u_angle_2}, {u_angle_3})\", targets={targets}, controls={controls})"
 
         return translation
 
@@ -803,7 +853,9 @@ class STDGateTranslator:
 
         targets = get_indexes(translator_utils.KEY_QUBITS, qubit_name, qubit_index, translated_code_info)
 
-        return f"{self.QCircuit_name}.add_operation(\"U({angle_1}, {angle_2}, {angle_3})\", targets={targets})"
+        qsimov_gate = stdgates_open_to_qsimov["U"]
+
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"{qsimov_gate}({angle_1}, {angle_2}, {angle_3})\", targets={targets})"
 
     def translate_gphase(self, line, translated_code_info):
         # TODO:
@@ -838,8 +890,8 @@ class GateOperationTranslator:
 
         # Compute the inverse
         try:
-            inverse = np.linalg.inv(matrix)
-        except np.linalg.LinAlgError:
+            inverse = matrix.inv()
+        except:
             raise ValueError("Matrix is singular and cannot be inverted.")
 
         return inverse
@@ -873,13 +925,16 @@ class GateOperationTranslator:
                 param, line_index = get_param(line,line_index)
                 gate_params.append(param)
 
-        return tuple(gate_params), line_index
+
+        if len(gate_params) == 1:       return f"({gate_params[0]})", line_index        # Avoid turning [pi] to ('pi',). Now it is (pi)
+        else:                           return tuple(gate_params), line_index
     
     def get_mod_qu_bits(self, line, line_index, mod_qu_bits, translated_code_info):
         while line_index < len(line):
             qubit_name, qubit_index, line_index = get_qu_bit(line, line_index)
 
-            if qubit_name in translated_code_info[translator_utils.KEY_QUBITS]:     key = translator_utils.KEY_QUBITS
+            if TranslatorUtils.is_custom_gate:                                      key = translator_utils.KEY_QUBITS
+            elif qubit_name in translated_code_info[translator_utils.KEY_QUBITS]:     key = translator_utils.KEY_QUBITS
             else:                                                                   key = translator_utils.KEY_BITS
 
             qubits = get_indexes(key, qubit_name, qubit_index, translated_code_info)
@@ -947,7 +1002,7 @@ class GateOperationTranslator:
         t_c_anticontrols = f", c_anticontrols={c_anticontrols}"         if c_anticontrols   else ""
 
         # Build the translation
-        translation =  f"{QCircuit_name}.add_operation({t_gate}, targets={mod_qu_bits[-1][0]}{t_controls}"
+        translation =  f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={mod_qu_bits[-1][0]}{t_controls}"
         translation += f"{t_anticontrols}{t_c_controls}{t_c_anticontrols})"
 
         # TODO:
@@ -964,6 +1019,46 @@ class GateOperationTranslator:
         }
         crz(pi) controls[0], target;
         '''
+        global custom_gate_qargs
+
+        TranslatorUtils.is_custom_gate = True
+        TranslatorUtils.QCircuit_name = translator_utils.QGate_name
+
+        first_param = True
+        params = ""
+        custom_gate_qargs = {}
+        qargs_counter = 0
+
+        gate_name = line[0]
+
+        # Get the gate parameters
+        line_index = 2
+        while line[line_index-1] != ")":
+            param, line_index = get_param(line, line_index)
+            if first_param:     
+                first_param = False
+                params += param
+            else:
+                params += f", {param}"
+
+        # Get the rest of the arguments
+        line_length = len(line)
+        while line_index < line_length:
+            qarg = line[line_index]
+
+            if qarg == "," or qarg == "{":
+                line_index += 1
+                continue
+
+            custom_gate_qargs[qarg] = qargs_counter
+            qargs_counter += 1
+            line_index += 1
+
+        translation = f"def {gate_name}({params}):"
+        translation += "\n"
+        translation += f"\tcustom_gate = {TranslatorUtils.qsimov_name}.QGate({qargs_counter}, 0, \"{gate_name}\")"
+
+        return translation
 
     def translate_reset(self, line, translated_code_info):
         '''
@@ -988,7 +1083,7 @@ class GateOperationTranslator:
         bits = get_indexes(translator_utils.KEY_BITS, bits_name, bits_index, translated_code_info)
         qubits = get_indexes(translator_utils.KEY_QUBITS, qubits_name,  qubits_index, translated_code_info)
 
-        return f"{QCircuit_name}.add_operation(\"MEASURE\", targets={qubits}, outputs={bits})"
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"MEASURE\", targets={qubits}, outputs={bits})"
 
     def translate_barrier(self, line, translated_code_info):
         '''
@@ -1005,4 +1100,4 @@ class GateOperationTranslator:
 
         # targets = get_indexes(key, reg_name, reg_index, translated_code_info)
 
-        return f"{QCircuit_name}.add_operation(\"BARRIER\")"
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"BARRIER\")"

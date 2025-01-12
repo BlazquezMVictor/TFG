@@ -2,7 +2,16 @@ import numpy as np
 from sympy.matrices import Matrix
 
 class TranslatorUtils:
+    # Shared variables used when translating a custom gate
+    is_custom_gate = False
+    qsimov_name = "qj"
+    QCircuit_name = "qc"
+
     def __init__(self):
+        self.qsimov_name = "qj"
+        self.QCircuit_name = "qc"
+        self.QGate_name = "custom_gate"
+
         self.KEY_QUBITS = 0
         self.KEY_BITS = 1
         self.KEY_CUSTOM_GATES = 2
@@ -104,7 +113,7 @@ class TranslatorUtils:
             "pow": "translate_mod",
             "gate": "translate_gate",       # Puede ocupar mas de una linea
             "reset": "translate_reset",
-            "measure": "translate_measure",
+            # "measure": "translate_measure",
             "barrier": "translate_barrier",
         }
         self.classic_instructions = {
