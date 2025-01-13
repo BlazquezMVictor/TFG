@@ -1,15 +1,15 @@
 program
   version
     OPENQASM
-    3.0
+    3
     ;
-  statementOrScope    
+  statementOrScope
     statement
       includeStatement
-        include       
+        include
         "stdgates.inc"
         ;
-  statementOrScope    
+  statementOrScope
     statement
       quantumDeclarationStatement
         qubitType
