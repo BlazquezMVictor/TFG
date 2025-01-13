@@ -111,7 +111,7 @@ class TranslatorUtils:
             "negctrl": "translate_mod",  # it is as 'ctrl' but uses 0 as activation bit instead of 1
             "inv": "translate_mod",
             "pow": "translate_mod",
-            "gate": "translate_gate",       # Puede ocupar mas de una linea
+            # "gate": "translate_gate",       # Puede ocupar mas de una linea
             "reset": "translate_reset",
             # "measure": "translate_measure",
             "barrier": "translate_barrier",
