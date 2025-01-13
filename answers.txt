@@ -1,0 +1,74 @@
+Como va el modulo de simpy?
+	- es ese realmente el modulo? Porque por lo que vi se usa para simulaciones con procesos y gestion de recursos, etc
+	- RESPUESTA
+		- El modulo es sympy
+		- En la carpeta conectores	
+			- parser.py
+			- conectores.py
+
+Tiene algun tipo de datos para los angulos?
+	- float, uint, int, etc
+	- se aceptan angulos negativos?
+	- RESPUESTA
+		- Qsimov acepta lo que le eches
+		- Float sirve y mirar lo de sympy porque los parámetros en wismov van en string
+
+Hay que usar siempre el QSystem?
+	- Se pueden hacer circuitos sin el?
+		- Como existe el QRegistry, etc.
+	- RESPUESTA
+		- Deberia centrarme en QCircuit y empezar siempre por ahi
+
+Hay operaciones que se hagan teniendo en cuenta tiempo, es decir, un delay?
+	- Por los tipos de datos duration y strech
+		- OpenQASM3.0 lo usa apra alinear operaciones en el tiempo
+	- RESPUESTA
+		- Ignorarlo o como máximo usar un sleep
+
+Ignoro las operaciones de tipo pulso sobre un qubit físico?
+	- Como Qsimov simula, no usa un ordenador cuantico real con qubits fisicos, tiene sentido traducir estas sentencias?
+	- RESPUESTA
+		- Ignorarla y lanzar UnsupportedOperationException
+
+Que opinan sobre usar el parser gramatico de openqasm
+	- Me devuelve una string con estrucutura de arbol donde me pone el analizador lexico y sintactico y los que sean
+	- RESPUESTAS
+		- Es una buena opción
+		- En tiempo de ejecucion puedo modificar variables de entorno con el modulo os
+			- Seria automatizarlo al final
+
+Posible problematica con el parametro 'fun' del metodo 'add_gate' puesto que en la traduccion se indica una direccion de memoria
+	-RESPUESTAS
+		- Probar a ver si funciona con la dirección de memoria
+			- Para ver si funciona siempre, llamar a gc.collect antes de ejecutar el código traducido
+		- Si no va, otra opción es meter en la traducción la función que devuelve la matriz, y entonces en el add_gate llamar a la función
+
+Para la traducción de la operacion 'gphase'
+	- RESPUESTAS
+		- Usar una matriz identidad donde la diagonal es e elevado a lo que me dijo hernan
+		- Hago una función que recibe el ángulo y devuelve la matriz para añadir la puerta
+			- En min y max args pongo el valor de la cantidad de ángulos
+
+En cuanto a la operación de reset
+	- RESPUESTAS
+		- Más allá de la inicialización, se supone que no está soportado en ningún sitio más
+		- Probar si de verdad en openQASM se puede hacer a mitad del circuito
+			- Hacer un par de Bell, resetear uno y medir
+			- Probarlo en Qiskit
+
+Como puedo generar una puerta propia con parametros (angulos)?
+	- Que tal hacer un def cuyo nombre es la puerta custom y de parametros recibe los del openqasm
+	- Y dentro de la funcion creamos la QGate y añadimos las operaciones pertinentes
+	- Y finalmente se añade la operacion donde la puerta es una llamada a esta funcion
+	- RESPUESTA
+		- La propuesta les ha gustado
+
+
+NOTAS
+- QGate es como un QCircuit pero no acepta operaciones no reversibles
+	- QGate permite crear una puerta a partir de otras puertas
+
+- SimpleGate permite crear puertas custom pero a partir de una matriz
+
+- El parámetro 'has_invert_arg' de la función 'add_gate' dejarlo en False
+	- True significa que soy yo quien calcula la inversa de la matriz
