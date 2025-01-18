@@ -229,3 +229,27 @@ ctrl @ negctrl @ ctrl @ inv @ pow(2) @ x controls[0], controls[1], controls[2], 
 ctrl @ negctrl(2) @ negctrl @ ctrl(2) @ x measurement, measurements[0], measurements[1], target, controls[0], controls[1], targets[0];
 '''
 
+custom_gates = '''
+qubit target;
+qubit[4] targets;
+qubit[4] controls;
+bit measurement;
+bit[4] measurements;
+
+gate my_gate_1(a1, a2, a3) c1, c2, t {
+    ctrl @ rz(a1) c1, t;
+    negctrl @ rx(a2) c2, t;
+    u(a1, a2, a3) t;
+}
+
+z target;
+
+gate my_gate_2 t1, t2 {
+    y t1;
+    z t2;
+}
+
+my_gate_1(pi, 10.8, 5.0) controls[0], controls[1], target;
+my_gate_2 target, targets;
+ctrl @ my_gate_2 controls[0], target, targets[0];
+'''

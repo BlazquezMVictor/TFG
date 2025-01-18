@@ -16,11 +16,19 @@ class Translator:
         self.translated_code_info = {
             self.translator_utils.KEY_QUBITS:       {},
             self.translator_utils.KEY_BITS:         {},
-            self.translator_utils.KEY_CUSTOM_GATES: {"amount": 0, "lines": []},
+            self.translator_utils.KEY_CUSTOM_GATES: {},
             self.translator_utils.KEY_INSTRUCTIONS: {"amount": 0, "lines": []},
             self.translator_utils.KEY_VARS_REF:     {}
         }
         self.translated_code = []
+
+    def compute_indent(self, amount_tabs):
+        tab = "\t"
+        indent = ""
+        for i in range(amount_tabs):
+            indent += tab
+
+        return indent
 
     def translate(self, parsed_code):
         custom_gate_init_indent = -1
@@ -32,6 +40,9 @@ class Translator:
 
             # Check if we have finished translating a custom gate
             if line[0] == custom_gate_init_indent:
+                last_line = f"return {translator_utils.QGate_name}"
+                gate_translation += self.compute_indent(custom_gate_init_indent + 1) + last_line + "\n"
+
                 TranslatorUtils.is_custom_gate = False
                 TranslatorUtils.QCircuit_name = self.translator_utils.QCircuit_name
                 custom_gate_init_indent = -1
@@ -63,6 +74,10 @@ class Translator:
                 # Translate the line without the keyword as it is not needed now
                 translation = getattr(self.std_gate_translator, method)(line[1][1:], self.translated_code_info)
 
+            # Check if we are applying a custom gate
+            elif keyword in self.translated_code_info[translator_utils.KEY_CUSTOM_GATES]:
+                translation = self.gate_op_translator.translate_custom_gate(line[1], self.translated_code_info)
+
             # Check gate operation
             elif keyword in self.translator_utils.gate_operations:
                 # Get corresponding method for translation
@@ -73,14 +88,8 @@ class Translator:
             # Check if we are translating a custom gate
             if not TranslatorUtils.is_custom_gate:
                 self.translated_code.append(translation)
-            else:
-                # Compute the indent
-                tab = "\t"
-                indent = ""
-                for i in range(line[0]):
-                    indent += tab
-                
+            else:                
                 # Add the translation to the custom gate
-                gate_translation += indent + translation + "\n"
+                gate_translation += self.compute_indent(line[0]) + translation + "\n"
 
         return self.translated_code

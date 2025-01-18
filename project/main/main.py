@@ -22,7 +22,8 @@ parsed_codes_folder = "ast_codes_parsed"
 # filename = "parser_complex.txt"
 # filename = "parser_stdgates.txt"
 # filename = "parser_gate_ops.txt"
-filename = "parser_modifiers.txt"
+# filename = "parser_modifiers.txt"
+filename = "parser_custom_gates.txt"
 
 grammar_words = {
     "program",
