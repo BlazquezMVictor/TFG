@@ -6,3 +6,6 @@
 	- En openqasme parece que es distinta
 	- Tengo que mirarla bien a ver que leches haces
 	- A poder ser a ver si encuentro su matriz
+
+- Permite Qsimov que se le pasen a las puertas que tienen parametros funciones del tipo 'arcos(10.2)'
+	- Ejemplo:		my_gate_1('arcos(23.4)', '10.8', '5.0')
