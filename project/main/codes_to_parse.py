@@ -329,26 +329,27 @@ for int[32] i in {1, 5, 10} {
 }
 
 for int i in [0:2:20] {
-   x 
+    x targets[0];
 }
 
 for uint[64] i in [4294967296:4294967306] {
-   d += 1
+    d += 1;
 }
 
 array[float[64], 4] my_floats = {1.2, -3.4, 0.5, 9.8};
-for float[64] f in my_floats {
-   d += 1
+    for float[64] f in my_floats {
+    d += 1;
 }
 
 bit[5] register;
-for b in register d += 1;
+for bit b in register {d += 1;}
 let alias = register[1:3];
-for b in alias {}
+for bit b in alias {}
 '''
 
 classic_while_instruction = '''
 int[32] i = 0;
+int d = 2;
 qubit[5] targets;
 qubit[5] controls;
 
@@ -392,19 +393,19 @@ def my_subroutine(int a1, float a2) -> int {
 }
 
 def my_subroutine_2(qubit[5] q) {
-    for i in [0:4] {
+    for int i in [0:4] {
         x q[i];
     }
 }
 
 def xmeasure(qubit q) -> bit { h q; return measure q; }
 
-const n = /* some size, known at compile time */;
+const int n = 10;
 def parity(bit[n] cin) -> bit {
     bit c;
-    for i in [0: n - 1] {
-    c ^= cin[i];
-    }
+    for int i in [0: n - 1] {
+        c ^= cin[i];
+        }
     return c;
 }
 
@@ -421,10 +422,13 @@ result = xmeasure(targets[0]);
 // parity
 qubit q;
 qubit r;
-c = measure q;
-c2 = measure r;
+bit c = measure q;
+bit c2 = measure r;
+bit[2] param;
+param[0] = c;
+param[1] = c2;
 bit result;
-result = parity(c ++ c2);
+result = parity(param);
 
 
 array[int[8], 3, 5] my_arr1;

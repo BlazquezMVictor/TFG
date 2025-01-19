@@ -25,7 +25,10 @@ parsed_codes_folder = "ast_codes_parsed"
 # filename = "parser_modifiers.txt"
 # filename = "parser_custom_gates.txt"
 # filename = "parser_classic_basic_insts.txt"
-filename = "parser_classic_if.txt"
+# filename = "parser_classic_if.txt"
+# filename = "parser_classic_for.txt"
+# filename = "parser_classic_while.txt"
+filename = "parser_classic_def.txt"
 
 grammar_words = {
     "program",
@@ -186,22 +189,26 @@ def get_info(line):
 
 def get_relevant_info(code):
     result = []
-    last_indent = -1
-    parsed_indent = -1
+    last_indent = 0
+    plus_1_indent_keywords = {"if", "for", "while", "def", "gate"}
 
     for line in code:
-        indent = get_line_indent(line)
-        info = get_info(line[indent:])
+        blank_indent = get_line_indent(line)
+        info = get_info(line[blank_indent:])
 
-        if indent > last_indent:
-            parsed_indent += 1
-            last_indent = indent
+        result.append((last_indent, info))
+
+        if info[0] in plus_1_indent_keywords:
+            last_indent += 1
+
+        if info[0] != "for" and info[0] != "array":
+            item = info[-1]
+            i = -1
+            while (item == "}"):
+                last_indent -= 1
+                i -= 1
+                item = info[i]
         
-        elif indent < last_indent:
-            parsed_indent -= 1
-            last_indent = indent
-
-        result.append((parsed_indent, info))
 
     return result
 
@@ -212,7 +219,7 @@ def remove_scope_brackets(code):
     while i < code_length:
         _, line = code[i]
 
-        if line[0] != "array":
+        if line[0] != "array" and line[0] != "for":
             if line[0] == "else":
                 i += 1
                 continue

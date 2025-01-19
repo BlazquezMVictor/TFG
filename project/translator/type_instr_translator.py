@@ -1241,10 +1241,52 @@ def rotr(array, distance):
         return get_expression(line) + ":"
 
     def translate_for(self, line, translated_code_info):
-        pass
+        item = line[0]
+        i = 0
+        is_range = False
+        
+        # Forget about the data type
+        i = line.index("in")
+        var_id = line[i-1]
+
+        # Check if the range is a normal range to adecuate it to python
+        # OPENQASM -> [init, step, end]
+        # PYTHON   -> [init, end, step]
+        if line[i+1] == "[":
+            is_range = True
+            i += 2
+            params = [line[i]]
+            item = line[i]
+
+            while (item != "]"):
+                if item == ":":
+                    i += 1
+                    item = line[i]
+                    params.append(item)
+
+                i += 1
+                item = line[i]
+
+        if is_range:
+            if len(params) == 2:        range = f"range({params[0]}, {int(params[1]) + 1})"
+            else:                       range = f"range({params[0]}, {int(params[2]) + int(params[1])}, {params[1]})"
+
+        else:
+            range = get_expression(line[i+1:])       # Here i points to keyword 'in'
+
+        translation = f"for {var_id} in {range}:"
+
+        return translation
 
     def translate_while(self, line, translated_code_info):
-        pass
+        return get_expression(line) + ":"
 
     def translate_def(self, line, translated_code_info):
         pass
+
+    def translate_break(self, line, translated_code_info):
+        return "break"
+    
+    def translate_continue(self, line, translated_code_info):
+        return "continue"
+    

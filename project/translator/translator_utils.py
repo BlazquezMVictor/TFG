@@ -28,6 +28,8 @@ class TranslatorUtils:
             "^": "^",
             "++": "++",
             '=': '=',
+            '>': '>',
+            '<': '<',
             '>=': '>=',
             '<=': '<=',
             '**': '**',
@@ -143,13 +145,13 @@ class TranslatorUtils:
             "else": "translate_if_else",
             "for": "translate_for",       # Puede ocupar mas de una linea
             "while": "translate_while",   # Puede ocupar mas de una linea
-            # "break": "break",
-            # "continue": "continue",
+            "def": "translate_def",           # Puede ocupar mas de una linea
+            "break": "translate_break",
+            "continue": "translate_continue",
             "end": "",              # It terminates the program
             # "switch": "match",      # Not yet implemented # Puede ocupar mas de una linea
             # "case": "case",         # Not yet implemented
             # "default": "case _",    # Not yet implemented
-            "def": "translate_def",           # Puede ocupar mas de una linea
             # "return": "return",
 
         }
