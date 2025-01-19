@@ -253,3 +253,176 @@ my_gate_1(pi, 10.8, 5.0) controls[0], controls[1], target;
 my_gate_2 target, targets;
 ctrl @ my_gate_2 controls[0], target, targets[0];
 '''
+
+classic_basic_instructions = '''
+int a;
+int b = 10;
+bit[8] c = "10001111";
+bit[8] d = "01110000";
+bool e = false;
+int f = 1;
+int g = 2
+int i = 3
+
+
+a = b;
+b = 0;
+a == b;
+a == 10;
+
+c << 1;
+c >> 1;
+c | d;
+c & d;
+rotl(c, 2)
+rotr(c, 2)
+popcount(d)
+
+e == false;
+e == bool(f);
+f >= b;
+f == pi;
+f == float(b)
+
+g * i;
+i / g;
+i % g;
+g ** i;
+g += 4;
+'''
+
+classic_if_instruction = '''
+int a = 0;
+int b = 1;
+int c = 0;
+qubit[5] targets;
+qubit[5] controls;
+
+if  ((a == b) && (a == c)) {
+    c = 2;
+    if (c >= b) {
+        h targets[0];
+        ctrl @ x controls[0], targets[1];
+    }
+} else {
+    a = 2;
+}
+'''
+
+classic_for_instruction = '''
+int[32] d = 0;
+qubit[5] targets;
+qubit[5] controls;
+
+for int[32] i in {1, 5, 10} {
+    if (i == 1) {
+        d += 5;
+    }
+
+    d += 1;
+}
+
+for int i in [0:2:20] {
+   x 
+}
+
+for uint[64] i in [4294967296:4294967306] {
+   d += 1
+}
+
+array[float[64], 4] my_floats = {1.2, -3.4, 0.5, 9.8};
+for float[64] f in my_floats {
+   d += 1
+}
+
+bit[5] register;
+for b in register d += 1;
+let alias = register[1:3];
+for b in alias {}
+'''
+
+classic_while_instruction = '''
+int[32] i = 0;
+qubit[5] targets;
+qubit[5] controls;
+
+while ((i < 10) || (d <= 5)) {
+    if (i == 5) {
+        for int j in {1, 2, 3} {
+            d += j;
+        }
+    }
+
+    i += 1;
+    x targets[0];
+    ctrl(2) @ h controls[0], controls[1], targets[0];
+
+    if (d >= 2) {
+        break;
+    }
+
+    if (i == 3) {
+        continue;
+    }
+}
+
+while (true)
+    d += 1;
+'''
+
+classic_def_instruction = '''
+qubit[5] targets;
+
+def my_subroutine(int a1, float a2) -> int {
+    if (a1 >= 2) {
+        return 0;
+    }
+
+    if (a2 <= 2) {
+        return 0;
+    }
+
+    return 1;
+}
+
+def my_subroutine_2(qubit[5] q) {
+    for i in [0:4] {
+        x q[i];
+    }
+}
+
+def xmeasure(qubit q) -> bit { h q; return measure q; }
+
+const n = /* some size, known at compile time */;
+def parity(bit[n] cin) -> bit {
+    bit c;
+    for i in [0: n - 1] {
+    c ^= cin[i];
+    }
+    return c;
+}
+
+def array_sub(readonly array[int[8], 2, 10] arr1, mutable array[int[8], #dim = 1] arr2) {
+    aar2[2] = 10;
+    uint[32] dim1  = sizeof(arr1, 1);
+    uint[32] dim2  = sizeof(arr1[0], 0);
+}
+
+int result = my_subroutine(1, 5);
+my_subroutine_2(targets);
+result = xmeasure(targets[0]);
+
+// parity
+qubit q;
+qubit r;
+c = measure q;
+c2 = measure r;
+bit result;
+result = parity(c ++ c2);
+
+
+array[int[8], 3, 5] my_arr1;
+array[int[8], 5] my_arr2;
+array_sub(my_arr1, my_arr2);
+'''
+

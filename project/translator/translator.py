@@ -11,13 +11,14 @@ class Translator:
         self.data_type_translator = DataTypeTranslator()
         self.std_gate_translator = STDGateTranslator()
         self.gate_op_translator = GateOperationTranslator()
+        self.classic_inst_translator = ClassicInstTranslator()
 
     def init_data_structures(self):
         self.translated_code_info = {
             self.translator_utils.KEY_QUBITS:       {},
             self.translator_utils.KEY_BITS:         {},
             self.translator_utils.KEY_CUSTOM_GATES: {},
-            self.translator_utils.KEY_INSTRUCTIONS: {"amount": 0, "lines": []},
+            self.translator_utils.KEY_SUBROUTINES:  {},
             self.translator_utils.KEY_VARS_REF:     {}
         }
         self.translated_code = []
@@ -40,7 +41,7 @@ class Translator:
 
             # Check if we have finished translating a custom gate
             if line[0] == custom_gate_init_indent:
-                last_line = f"return {translator_utils.QGate_name}"
+                last_line = f"return {self.translator_utils.QGate_name}"
                 gate_translation += self.compute_indent(custom_gate_init_indent + 1) + last_line + "\n"
 
                 TranslatorUtils.is_custom_gate = False
@@ -75,15 +76,21 @@ class Translator:
                 translation = getattr(self.std_gate_translator, method)(line[1][1:], self.translated_code_info)
 
             # Check if we are applying a custom gate
-            elif keyword in self.translated_code_info[translator_utils.KEY_CUSTOM_GATES]:
+            elif keyword in self.translated_code_info[self.translator_utils.KEY_CUSTOM_GATES]:
                 translation = self.gate_op_translator.translate_custom_gate(line[1], self.translated_code_info)
 
             # Check gate operation
             elif keyword in self.translator_utils.gate_operations:
-                # Get corresponding method for translation
                 method = self.translator_utils.gate_operations[keyword]
-                # Translate the line without the keyword as it is not needed now
                 translation = getattr(self.gate_op_translator, method)(line[1], self.translated_code_info)  # This time we maintain the keyword
+
+            # Check variable operation
+            elif keyword in self.translated_code_info[self.translator_utils.KEY_VARS_REF]:
+                translation = self.classic_inst_translator.translate_var_operation(line[1], self.translated_code_info)
+
+            elif keyword in self.translator_utils.classic_instructions:
+                method = self.translator_utils.classic_instructions[keyword]
+                translation = getattr(self.classic_inst_translator, method)(line[1][1:], self.translated_code_info)
 
             # Check if we are translating a custom gate
             if not TranslatorUtils.is_custom_gate:

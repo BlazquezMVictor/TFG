@@ -63,10 +63,10 @@ def get_expression(line, is_array=False):
                 is_casting = True
                 if item == "angle": item = "float"
 
-            if item in translator_utils.builtin_constants:
+            elif item in translator_utils.builtin_constants:
                 item = translator_utils.builtin_constants[item]
 
-            if item in translator_utils.builtin_functions:
+            elif item in translator_utils.builtin_functions:
                 item = translator_utils.builtin_functions[item]
 
                 # We assume "real" and "imag" functions are only use with variables
@@ -76,7 +76,8 @@ def get_expression(line, is_array=False):
                     # Adaptar las funciones de real e imag a python
                     # De momento se traduce como -> .real(my_var)
 
-            if item in translator_utils.math_operators:
+            elif item in translator_utils.math_logic_operators:
+                item = translator_utils.math_logic_operators[item]
                 item = " " + item + " "
 
             if is_array and item == "{":
@@ -165,7 +166,7 @@ class DataTypeTranslator:
             start_index = 0
 
         translated_code_info[translator_utils.KEY_QUBITS][var_id] = {"start_index": start_index, "size": qubit_amount}
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "qubit"}
 
         return translation
 
@@ -200,7 +201,7 @@ class DataTypeTranslator:
             start_index = 0
 
         translated_code_info[translator_utils.KEY_BITS][var_id] = {"start_index": start_index, "size": bit_amount}
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "bit"}
 
         return translation
 
@@ -223,9 +224,7 @@ class DataTypeTranslator:
 
         translation = f"{var_id}: int{init_value}"
 
-        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
-        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "int"}
 
         return translation
 
@@ -253,9 +252,7 @@ class DataTypeTranslator:
 
         translation = f"{var_id}: float{init_value}"
 
-        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
-        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "float"}
 
         return translation
 
@@ -278,9 +275,7 @@ class DataTypeTranslator:
 
         translation = f"{var_id}: complex{init_value}"
 
-        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
-        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "complex"}
 
         return translation
 
@@ -302,9 +297,7 @@ class DataTypeTranslator:
 
         translation = f"{var_id}: bool{init_value}"
 
-        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
-        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "bool"}
 
         return translation
 
@@ -326,9 +319,7 @@ class DataTypeTranslator:
 
         translation = f"{var_id}: {var_type}{init_value}"
 
-        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
-        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": var_type}
 
         return translation
 
@@ -360,9 +351,7 @@ class DataTypeTranslator:
 
         translation = f"{var_id}: list{init_value}"
 
-        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
-        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "array"}
 
         return translation
 
@@ -386,9 +375,7 @@ class DataTypeTranslator:
 
         translation = f"{var_id}{init_value}"
 
-        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["amount"] += 1
-        translated_code_info[translator_utils.KEY_INSTRUCTIONS]["lines"].append(translation)
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = var_id
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "let"}
 
         return translation
 
@@ -1197,3 +1184,67 @@ class GateOperationTranslator:
         # targets = get_indexes(key, reg_name, reg_index, translated_code_info)
 
         return f"{TranslatorUtils.QCircuit_name}.add_operation(\"BARRIER\")"
+    
+class ClassicInstTranslator:
+    def __init__(self):
+        self.is_rotl_defined = False
+        self.is_rotr_defined = False
+
+    # TODO:
+    # Mirar si "rotl" y "rotr" devuelven valor o modifican directamente la array
+    def rotl(self):
+        func = '''
+def rotl(array, distance):
+    for i in range(distance):
+        first = array.pop(0)
+        array.append(first)
+        '''
+        return func
+    
+    def rotr(self):
+        func = '''
+def rotr(array, distance):
+    for i in range(distance):
+        first = array.pop(0)
+        array.insert(0, first)
+        '''
+        return func
+
+    def translate_var_operation(self, line, translated_code_info):
+        return get_expression(line)
+    
+    def translate_rotl(self, line, translated_code_info):
+        translation = ""
+
+        if not self.is_rotl_defined:
+            self.is_rotl_defined = True
+
+            translation = self.rotl()
+            translation += "\n"
+
+        translation += "rotl" + get_expression(line)
+        return translation
+
+    def translate_rotr(self, line, translated_code_info):
+        translation = ""
+
+        if not self.is_rotr_defined:
+            self.is_rotr_defined = True
+
+            translation = self.rotr()
+            translation += "\n"
+
+        translation += "rotr" + get_expression(line)
+        return translation
+    
+    def translate_if(self, line, translated_code_info):
+        pass
+
+    def translate_for(self, line, translated_code_info):
+        pass
+
+    def translate_while(self, line, translated_code_info):
+        pass
+
+    def translate_def(self, line, translated_code_info):
+        pass

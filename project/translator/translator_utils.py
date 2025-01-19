@@ -15,11 +15,35 @@ class TranslatorUtils:
         self.KEY_QUBITS = 0
         self.KEY_BITS = 1
         self.KEY_CUSTOM_GATES = 2
-        self.KEY_INSTRUCTIONS = 3
+        self.KEY_SUBROUTINES = 3
         self.KEY_VARS_REF = 4
 
         self.special_chars = {"(", ")", "[", "]", "{", "}", "="}
-        self.math_operators = {'+', '-', '*', '/'}
+        self.math_logic_operators = {
+            '+': "+",
+            '-': '-',
+            '*': '*',
+            '/': '/',
+            '%': '%',
+            "^": "^",
+            "++": "++",
+            '=': '=',
+            '>=': '>=',
+            '<=': '<=',
+            '**': '**',
+            '+=': '+=',
+            '-=': '-=',
+            '*=': '*=',
+            '/=': '/=',
+            '%=': '%=',
+            '==': '==',
+            '<<': '<<',
+            '>>': '>>',
+            '|': '|',
+            '&': '&',
+            "&&": "and",
+            "||": "or",
+        }
         self.comments = {
             "//": "#",
             "/*": "'''",
@@ -67,8 +91,6 @@ class TranslatorUtils:
             "mod": "np.mod",
             "popcount": "np.count_nonzero",
             "pow": "np.power",
-            "rotl": "rotl",
-            "rotr": "rotr",
             "sin": "np.sin",
             "sqrt": "np.sqrt",
             "tan": "np.tan",
@@ -104,8 +126,6 @@ class TranslatorUtils:
             "U": "translate_u",
             "gphase": "translate_gphase",   # TODO: Esto parece que es una builtin function
         }
-        # TODO:
-        # Traducir las gatee_operations
         self.gate_operations = {
             "ctrl": "translate_mod",     # 'ctrl @' indicates that the following gate is controlled -> ctrl @ rz(pi) q1, q2; q1 is control & q2 is target
             "negctrl": "translate_mod",  # it is as 'ctrl' but uses 0 as activation bit instead of 1
@@ -117,37 +137,21 @@ class TranslatorUtils:
             "barrier": "translate_barrier",
         }
         self.classic_instructions = {
-            "&&": "and",
-            "||": "or",
-            "if": "if",         # Puede ocupar mas de una linea (recordar que puede tener else statement)
-            "for": "for",       # Puede ocupar mas de una linea
-            "while": "while",   # Puede ocupar mas de una linea
-            "break": "break",
-            "continue": "continue",
+            "rotl": "translate_rotl",
+            "rotr": "translate_rotr",
+            "if": "translate_if",         # Puede ocupar mas de una linea (recordar que puede tener else statement)
+            "for": "translate_for",       # Puede ocupar mas de una linea
+            "while": "translate_while",   # Puede ocupar mas de una linea
+            # "break": "break",
+            # "continue": "continue",
             "end": "",              # It terminates the program
-            "switch": "match",      # Not yet implemented # Puede ocupar mas de una linea
-            "case": "case",         # Not yet implemented
-            "default": "case _",    # Not yet implemented
-            "def": "def",           # Puede ocupar mas de una linea
-            "return": "return",
+            # "switch": "match",      # Not yet implemented # Puede ocupar mas de una linea
+            # "case": "case",         # Not yet implemented
+            # "default": "case _",    # Not yet implemented
+            "def": "translate_def",           # Puede ocupar mas de una linea
+            # "return": "return",
 
         }
-
-# TODO:
-# Mirar si "rotl" y "rotr" devuelven valor o modifican directamente la array
-    def rotl(self, array, distance):
-        for i in range(distance):
-            first = array.pop(0)
-            array.append(first)
-
-        return array
-    
-    def rotr(self, array, distance):
-        for i in range(distance):
-            first = array.pop()
-            array.insert(0, first)
-
-        return array
     
     def matrix_square_roots(matrix):
         """
