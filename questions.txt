@@ -1,7 +1,6 @@
 - La matriz inversa es especial o se puede calcular con numpy por ejemplo (inverse = np.linalg.inv(matrix))
 - Matrices que no estan las calculo yo con una funcion si son derivadas de otras como la S, que es sqrtZ
 
-
 - Hablar sobre la puerta P
 	- En openqasme parece que es distinta
 	- Tengo que mirarla bien a ver que leches haces
@@ -9,3 +8,21 @@
 
 - Permite Qsimov que se le pasen a las puertas que tienen parametros funciones del tipo 'arcos(10.2)'
 	- Ejemplo:		my_gate_1('arcos(23.4)', '10.8', '5.0')
+
+- En OpenQASM hay una instruccion 'end' que terminar el programa, se llame desde donde se llame, tiene sentido que la implemente?
+- Tambien tiene llamadas a funciones externas, pero no he visto ejemplos y en la documentacion solo explica como usarlas, la implemento?
+- Las keywords 'switch', 'case' y 'default' estan reservadas pero su funcion aun no esta implementada (version 3.0)
+	- Evidentemente lo ignoro no?
+
+- Tienen 'pragmas' para indicar cierta informacion especifica de las herrmaientas que el usuario usar
+	- Para el modelo de ruido
+	- Para la maxima temperatura de la qpu
+	- Para añadir infor extra
+		- pragma user alice account 12345678
+
+- Tambien tienen anotaciones para una funcion similar
+	- @reversible indica que el compilador debe crear una puerta reversible de la que se esta creando justo debajo
+
+- Tambien estan las keywords 'input' y 'output' que se utilizan para indicar que variables se van a usar como inputs y outputs del circuito 
+	- Esto permite poder tener el circuito como un ejecutable y comunicarlo con otros circuitos?
+	- Asi solo se compila una vez el circuito y se puede correr varias veces con diferentes combinaciones de esos parametros
