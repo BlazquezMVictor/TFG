@@ -24,7 +24,8 @@ parsed_codes_folder = "ast_codes_parsed"
 # filename = "parser_gate_ops.txt"
 # filename = "parser_modifiers.txt"
 # filename = "parser_custom_gates.txt"
-filename = "parser_classic_basic_insts.txt"
+# filename = "parser_classic_basic_insts.txt"
+filename = "parser_classic_if.txt"
 
 grammar_words = {
     "program",
@@ -204,6 +205,30 @@ def get_relevant_info(code):
 
     return result
 
+def remove_scope_brackets(code):
+    code_length = len(code)
+    i = 0
+
+    while i < code_length:
+        _, line = code[i]
+
+        if line[0] != "array":
+            if line[0] == "else":
+                i += 1
+                continue
+
+            if line[-1] == "else":
+                code.insert(i+1, (code[i+1][0]-1, ["else"]))
+                code_length += 1
+                line.pop(-1)
+
+            item = line[-1]
+            while (item == "}"):
+                line.pop(-1)
+                item = line[-1]
+
+        i += 1
+
 # MAIN
 if __name__ == "__main__":
     translate = True
@@ -217,6 +242,7 @@ if __name__ == "__main__":
         result = remove_jump_line(code)
         result = remove_blank_spaces(result)
         result = get_relevant_info(result)
+        remove_scope_brackets(result)
 
         if not translate:
             for line in result:

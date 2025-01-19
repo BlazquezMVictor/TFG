@@ -303,10 +303,16 @@ if  ((a == b) && (a == c)) {
     if (c >= b) {
         h targets[0];
         ctrl @ x controls[0], targets[1];
+    } else {
+        c = 7;
     }
 } else {
     a = 2;
 }
+
+if (a == b) {
+    if (c == 0) {a = 3;}}
+else { a = 2;}
 '''
 
 classic_for_instruction = '''

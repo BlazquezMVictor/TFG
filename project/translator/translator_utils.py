@@ -139,7 +139,8 @@ class TranslatorUtils:
         self.classic_instructions = {
             "rotl": "translate_rotl",
             "rotr": "translate_rotr",
-            "if": "translate_if",         # Puede ocupar mas de una linea (recordar que puede tener else statement)
+            "if": "translate_if_else",         # Puede ocupar mas de una linea (recordar que puede tener else statement)
+            "else": "translate_if_else",
             "for": "translate_for",       # Puede ocupar mas de una linea
             "while": "translate_while",   # Puede ocupar mas de una linea
             # "break": "break",

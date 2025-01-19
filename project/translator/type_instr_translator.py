@@ -1036,14 +1036,14 @@ class GateOperationTranslator:
 
         # Compute translation components
         if gate in stdgates_open_to_qsimov:
-            if gate_params:
+            if len(gate_params) > 2:
                 t_gate = f"f\"{stdgates_open_to_qsimov[gate]}{gate_params}\""
             
             else:
                 t_gate = f"f\"{stdgates_open_to_qsimov[gate]}\""
 
         elif gate in translated_code_info[translator_utils.KEY_CUSTOM_GATES]:
-            if gate_params:
+            if len(gate_params) > 2:
                 t_gate = f"f{gate}{gate_params}"
         
             else:
@@ -1237,8 +1237,8 @@ def rotr(array, distance):
         translation += "rotr" + get_expression(line)
         return translation
     
-    def translate_if(self, line, translated_code_info):
-        pass
+    def translate_if_else(self, line, translated_code_info):
+        return get_expression(line) + ":"
 
     def translate_for(self, line, translated_code_info):
         pass
