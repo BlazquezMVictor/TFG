@@ -1,5 +1,6 @@
 - La matriz inversa es especial o se puede calcular con numpy por ejemplo (inverse = np.linalg.inv(matrix))
 - Matrices que no estan las calculo yo con una funcion si son derivadas de otras como la S, que es sqrtZ
+- Hablar sobre los modificadores 'inv' y 'pow'
 
 - Hablar sobre la puerta P
 	- En openqasme parece que es distinta
