@@ -38,6 +38,7 @@ class TranslatorUtils:
             '*=': '*=',
             '/=': '/=',
             '%=': '%=',
+            '^=': "^=",
             '==': '==',
             '<<': '<<',
             '>>': '>>',
@@ -81,6 +82,8 @@ class TranslatorUtils:
         
         # TODO:
         # Hacer .real y .imag bien
+        # TODO:
+        # Traducir sizeof
         self.builtin_functions = {
             "arcos": "np.arccos",
             "arsin": "np.arcsin",
@@ -97,7 +100,8 @@ class TranslatorUtils:
             "sqrt": "np.sqrt",
             "tan": "np.tan",
             "real": ".real",
-            "imag": ".imag"
+            "imag": ".imag",
+            "sizeof": ""
         }
         self.std_gates = {
             "p": "translate_p",
@@ -148,11 +152,11 @@ class TranslatorUtils:
             "def": "translate_def",           # Puede ocupar mas de una linea
             "break": "translate_break",
             "continue": "translate_continue",
-            "end": "",              # It terminates the program
+            "return": "translate_return",
+            "end": "translate_end",              # It terminates the program
             # "switch": "match",      # Not yet implemented # Puede ocupar mas de una linea
             # "case": "case",         # Not yet implemented
             # "default": "case _",    # Not yet implemented
-            # "return": "return",
 
         }
     

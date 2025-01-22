@@ -28,7 +28,8 @@ parsed_codes_folder = "ast_codes_parsed"
 # filename = "parser_classic_if.txt"
 # filename = "parser_classic_for.txt"
 # filename = "parser_classic_while.txt"
-filename = "parser_classic_def.txt"
+# filename = "parser_classic_def.txt"
+filename = "parser_classic_def_no_qubit.txt"
 
 grammar_words = {
     "program",

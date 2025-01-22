@@ -83,13 +83,17 @@ class Translator:
             elif keyword in self.translated_code_info[self.translator_utils.KEY_VARS_REF]:
                 translation = self.classic_inst_translator.translate_var_operation(line[1], self.translated_code_info)
 
+            # Check if we are calling a custom function
+            elif keyword in self.translated_code_info[self.translator_utils.KEY_SUBROUTINES]:
+                translation = self.classic_inst_translator.translate_custom_def(line[1], self.translated_code_info)
+
             # Check classic instruction
             elif keyword in self.translator_utils.classic_instructions:
                 method = self.translator_utils.classic_instructions[keyword]
                 translation = getattr(self.classic_inst_translator, method)(line[1], self.translated_code_info)
 
             # Check if we are translating a custom gate
-            if not TranslatorUtils.is_custom_gate:
+            if not TranslatorUtils.is_custom_gate and translation:
                 indent = self.compute_indent(line[0])
                 translation = indent + translation
 

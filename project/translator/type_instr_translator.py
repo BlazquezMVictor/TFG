@@ -139,7 +139,7 @@ def get_indexes(key, name, index, translated_code_info):
 
 class DataTypeTranslator:
     def __init__(self):
-        translator_utils = TranslatorUtils()
+        pass
 
     def get_eq_symbol_index(self, line):
         try:        return line.index("=")      # Get '=' occurence index
@@ -156,7 +156,7 @@ class DataTypeTranslator:
         if line[0] == "[":  qubit_amount = int(line[1])
         var_id = line[self.get_eq_symbol_index(line) - 1]
 
-        translation = f"QRegistry({qubit_amount}) {var_id}"
+        # translation = f"QRegistry({qubit_amount}) {var_id}"
 
         registered_qubits = translated_code_info[translator_utils.KEY_QUBITS]
         if registered_qubits:   
@@ -168,7 +168,7 @@ class DataTypeTranslator:
         translated_code_info[translator_utils.KEY_QUBITS][var_id] = {"start_index": start_index, "size": qubit_amount}
         translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "qubit"}
 
-        return translation
+        return ""
 
     def translate_bit(self, line, translated_code_info):
         '''
@@ -181,17 +181,16 @@ class DataTypeTranslator:
 
         bit_amount = 1
         if line[0] == "[":   bit_amount = int(line[1])
-        eq_symbol_index = self.get_eq_symbol_index(line)
-        var_id = line[eq_symbol_index - 1]
+        var_id = line[self.get_eq_symbol_index(line) - 1]
 
-        if eq_symbol_index == 0:
-            if bit_amount > 1:      init_value = [0 for i in range(bit_amount)]
-            else:                   init_value = 0
-        else:
-            if bit_amount > 1:      init_value = [int(char) for char in line[eq_symbol_index + 1] if char.isdigit()]
-            else:                   init_value = line[eq_symbol_index + 1][1]       # We get the number without the '"', that is why we add '[1]' at the end
+        # if eq_symbol_index == 0:
+        #     if bit_amount > 1:      init_value = [0 for i in range(bit_amount)]
+        #     else:                   init_value = 0
+        # else:
+        #     if bit_amount > 1:      init_value = [int(char) for char in line[eq_symbol_index + 1] if char.isdigit()]
+        #     else:                   init_value = line[eq_symbol_index + 1][1]       # We get the number without the '"', that is why we add '[1]' at the end
 
-        translation = f"{var_id} = {init_value}"
+        # translation = f"{var_id} = {init_value}"
 
         registered_bits = translated_code_info[translator_utils.KEY_BITS]
         if registered_bits:   
@@ -203,7 +202,7 @@ class DataTypeTranslator:
         translated_code_info[translator_utils.KEY_BITS][var_id] = {"start_index": start_index, "size": bit_amount}
         translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "bit"}
 
-        return translation
+        return ""
 
     def translate_int(self, line, translated_code_info):
         '''
@@ -1189,9 +1188,15 @@ class ClassicInstTranslator:
     def __init__(self):
         self.is_rotl_defined = False
         self.is_rotr_defined = False
+        self.returning_types = {
+            "bit": "int",
+            "int": "int",
+            "float": "float",
+            "complex": "complex",
+            "bool": "bool",
+            "array": "list"
+        }
 
-    # TODO:
-    # Mirar si "rotl" y "rotr" devuelven valor o modifican directamente la array
     def rotl(self):
         func = '''
 def rotl(array, distance):
@@ -1209,6 +1214,53 @@ def rotr(array, distance):
         array.insert(0, first)
         '''
         return func
+
+    def get_def_params(self, line):
+        var_ids = []
+        types = []
+
+        is_searching = True
+        while is_searching:
+            try:
+                comma_index = line.index(",")
+
+                if line[comma_index + 1] in translator_utils.data_types:
+                    type = line[0]
+                    var_id = line[comma_index - 1]
+                    line = line[comma_index + 1:]
+
+                    var_ids.append(var_id)
+                    types.append(type)
+
+                elif line[comma_index + 1] == "readonly" or line[comma_index + 1] == "mutable":
+                    type = "array"
+                    var_id = line[comma_index - 1]
+                    line = line[comma_index + 1:]
+
+                    var_ids.append(var_id)
+                    types.append(type)
+
+                else:
+                    line.pop(comma_index)
+
+            except ValueError:
+                if line[0] in translator_utils.data_types:
+                    type = line[0]
+                    var_id = line[-1]
+
+                    var_ids.append(var_id)
+                    types.append(type)
+
+                elif line[0] == "readonly" or line[0] == "mutable":
+                    type = "array"
+                    var_id = line[-1]
+
+                    var_ids.append(var_id)
+                    types.append(type)
+                
+                is_searching = False
+        
+        return var_ids, types
 
     def translate_var_operation(self, line, translated_code_info):
         return get_expression(line)
@@ -1255,21 +1307,26 @@ def rotr(array, distance):
         if line[i+1] == "[":
             is_range = True
             i += 2
-            params = [line[i]]
+            params = []
+            param = ""
             item = line[i]
 
             while (item != "]"):
                 if item == ":":
-                    i += 1
-                    item = line[i]
-                    params.append(item)
+                    params.append(param)
+                    param = ""
 
+                else:
+                    param += item
+                
                 i += 1
                 item = line[i]
+            # Append last param
+            params.append(param)
 
         if is_range:
-            if len(params) == 2:        range = f"range({params[0]}, {int(params[1]) + 1})"
-            else:                       range = f"range({params[0]}, {int(params[2]) + int(params[1])}, {params[1]})"
+            if len(params) == 2:        range = f"range({params[0]}, {params[1]} + 1)"
+            else:                       range = f"range({params[0]}, {params[2]} + {params[1]}, {params[1]})"
 
         else:
             range = get_expression(line[i+1:])       # Here i points to keyword 'in'
@@ -1282,7 +1339,56 @@ def rotr(array, distance):
         return get_expression(line) + ":"
 
     def translate_def(self, line, translated_code_info):
-        pass
+        open_bracket_index = line.index("(")
+        close_bracket_index = line.index(")")
+
+        def_name = line[open_bracket_index-1]
+        if line[close_bracket_index + 1] == "{":    t_return_type = ""
+        else:                                       t_return_type = f" -> {self.returning_types[line[-2]]}"
+
+        var_ids, types = self.get_def_params(line[open_bracket_index+1:close_bracket_index])        # +1 to init range to avoid sending '('
+
+        # i = open_bracket_index+1
+        # item = line[i]
+        # param = []
+        # while (item != "->" and item != "{"):
+        #     if item == "," or item == ")":
+        #         if param[0] == "readonly" or param[0] == "mutable":     type = "array"
+        #         else:                                                   type = param[0]
+
+        #         translated_code_info[translator_utils.KEY_VARS_REF] = {"id": param[-1], "type": type}
+        #         params.append(param[-1])
+        #         param = []
+
+        #     else:
+        #         param.append(item)
+
+        #     i += 1
+        #     item = line[i]
+
+        amount_params = len(var_ids)
+        var_ids_str = ""
+        is_first_param = True
+
+        for i in range(amount_params):
+            translated_code_info[translator_utils.KEY_VARS_REF][var_ids[i]] = {"id":var_ids[i], "type": types[i]}
+            
+            if is_first_param:
+                is_first_param = False
+                var_ids_str += var_ids[i]
+            
+            else:
+                var_ids_str += f", {var_ids[i]}"
+
+        if amount_params == 1:      t_params = f"({var_ids[0]})"
+        elif amount_params > 1:     t_params = f"({var_ids_str})"
+        else:                       t_params = "()"
+
+        translated_code_info[translator_utils.KEY_SUBROUTINES][def_name] = {"amount_params": amount_params, "returning_type": t_return_type.split(" ")[-1]}
+
+        translation = f"def {def_name}{t_params}{t_return_type}:"
+
+        return translation
 
     def translate_break(self, line, translated_code_info):
         return "break"
@@ -1290,3 +1396,11 @@ def rotr(array, distance):
     def translate_continue(self, line, translated_code_info):
         return "continue"
     
+    def translate_return(self, line, translated_code_info):
+        return f"return {get_expression(line[1:])}"
+
+    def translate_end(self, line, translated_code_info):
+        return f"{TranslatorUtils.QCircuit_name}.add_operation(\"END\")"
+
+    def translate_custom_def(self, line, translated_code_info):
+        return get_expression(line)

@@ -377,7 +377,7 @@ while (true)
     d += 1;
 '''
 
-classic_def_instruction = '''
+classic_def_no_qubit_instruction = '''
 qubit[5] targets;
 
 def my_subroutine(int a1, float a2) -> int {
@@ -392,38 +392,30 @@ def my_subroutine(int a1, float a2) -> int {
     return 1;
 }
 
-def my_subroutine_2(qubit[5] q) {
-    for int i in [0:4] {
-        x q[i];
-    }
-}
-
-def xmeasure(qubit q) -> bit { h q; return measure q; }
-
 const int n = 10;
 def parity(bit[n] cin) -> bit {
     bit c;
     for int i in [0: n - 1] {
         c ^= cin[i];
-        }
+    }
     return c;
 }
 
 def array_sub(readonly array[int[8], 2, 10] arr1, mutable array[int[8], #dim = 1] arr2) {
-    aar2[2] = 10;
+    arr2[2] = 10;
     uint[32] dim1  = sizeof(arr1, 1);
     uint[32] dim2  = sizeof(arr1[0], 0);
 }
 
 int result = my_subroutine(1, 5);
-my_subroutine_2(targets);
-result = xmeasure(targets[0]);
 
 // parity
 qubit q;
 qubit r;
-bit c = measure q;
-bit c2 = measure r;
+bit c;
+bit c2;
+c = measure q;
+c2 = measure r;
 bit[2] param;
 param[0] = c;
 param[1] = c2;
