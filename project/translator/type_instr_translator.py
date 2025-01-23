@@ -51,8 +51,14 @@ custom_gate_qargs = {}
 def get_expression(line, is_array=False):
         is_casting = False
         expression = ""
+        jumps = 0
 
-        for item in line:
+        for i, item in enumerate(line):
+
+            if jumps > 0:
+                jumps -= 1
+                continue
+
             if is_casting and item != "(":
                 continue
 
@@ -69,12 +75,40 @@ def get_expression(line, is_array=False):
             elif item in translator_utils.builtin_functions:
                 item = translator_utils.builtin_functions[item]
 
-                # We assume "real" and "imag" functions are only use with variables
                 if item == ".real" or item == ".imag":
-                    pass
-                    # TODO:
-                    # Adaptar las funciones de real e imag a python
-                    # De momento se traduce como -> .real(my_var)
+                    close_bracket_i = line[i:].index(")")
+                    expr = get_expression(line[i+2:close_bracket_i])    # We add +2 to point to the first relevant intem from '('
+
+                    if len(expr.split(" ")) > 1:    item = f"({expr}){item}"
+                    else:                           item = f"{expr}{item}"
+
+                    jumps = close_bracket_i - i
+
+                elif item == "len":
+                    close_bracket_i = line[i:].index(")")
+                    expr = get_expression(line[i+2:close_bracket_i])
+
+                    var_id = line[i + 2]
+                    next_to_var_id = line[i + 3]
+                    dimension = 0
+                    level = "[0]"
+                    levels = ""
+                    
+                    if next_to_var_id == ",":
+                        dimension = int(line[i + 4])
+
+                    elif next_to_var_id == "[":
+                        dimension_1 = int(line[i + 4]) + 1       # We add +1 at the end to point to the correct dimension in python
+                        dimension_2 = int(line[close_bracket_i - 1])
+                        dimension = dimension_1 + dimension_2
+
+                    for d in range(dimension):
+                        levels += level
+
+                    item = f"len({var_id}{levels})"
+
+                    jumps = close_bracket_i - i
+
 
             elif item in translator_utils.math_logic_operators:
                 item = translator_utils.math_logic_operators[item]
@@ -1347,24 +1381,6 @@ def rotr(array, distance):
         else:                                       t_return_type = f" -> {self.returning_types[line[-2]]}"
 
         var_ids, types = self.get_def_params(line[open_bracket_index+1:close_bracket_index])        # +1 to init range to avoid sending '('
-
-        # i = open_bracket_index+1
-        # item = line[i]
-        # param = []
-        # while (item != "->" and item != "{"):
-        #     if item == "," or item == ")":
-        #         if param[0] == "readonly" or param[0] == "mutable":     type = "array"
-        #         else:                                                   type = param[0]
-
-        #         translated_code_info[translator_utils.KEY_VARS_REF] = {"id": param[-1], "type": type}
-        #         params.append(param[-1])
-        #         param = []
-
-        #     else:
-        #         param.append(item)
-
-        #     i += 1
-        #     item = line[i]
 
         amount_params = len(var_ids)
         var_ids_str = ""

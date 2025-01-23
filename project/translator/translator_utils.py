@@ -101,7 +101,7 @@ class TranslatorUtils:
             "tan": "np.tan",
             "real": ".real",
             "imag": ".imag",
-            "sizeof": ""
+            "sizeof": "len"
         }
         self.std_gates = {
             "p": "translate_p",
