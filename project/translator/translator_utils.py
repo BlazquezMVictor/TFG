@@ -4,6 +4,7 @@ from sympy.matrices import Matrix
 class TranslatorUtils:
     # Shared variables used when translating a custom gate
     is_custom_gate = False
+    is_custom_def = False
     qsimov_name = "qj"
     QCircuit_name = "qc"
 
@@ -16,7 +17,8 @@ class TranslatorUtils:
         self.KEY_BITS = 1
         self.KEY_CUSTOM_GATES = 2
         self.KEY_SUBROUTINES = 3
-        self.KEY_VARS_REF = 4
+        self.KEY_SUBROUTINE_PARAMS = 4
+        self.KEY_VARS_REF = 5
 
         self.special_chars = {"(", ")", "[", "]", "{", "}", "="}
         self.math_logic_operators = {
@@ -44,6 +46,7 @@ class TranslatorUtils:
             '>>': '>>',
             '|': '|',
             '&': '&',
+            '~': "-",
             "&&": "and",
             "||": "or",
         }

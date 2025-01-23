@@ -15,11 +15,12 @@ class Translator:
 
     def init_data_structures(self):
         self.translated_code_info = {
-            self.translator_utils.KEY_QUBITS:       {},
-            self.translator_utils.KEY_BITS:         {},
-            self.translator_utils.KEY_CUSTOM_GATES: {},
-            self.translator_utils.KEY_SUBROUTINES:  {},
-            self.translator_utils.KEY_VARS_REF:     {}
+            self.translator_utils.KEY_QUBITS:               {},
+            self.translator_utils.KEY_BITS:                 {},
+            self.translator_utils.KEY_CUSTOM_GATES:         {},
+            self.translator_utils.KEY_SUBROUTINES:          {},
+            self.translator_utils.KEY_SUBROUTINE_PARAMS:    {},
+            self.translator_utils.KEY_VARS_REF:             {}
         }
         self.translated_code = []
 

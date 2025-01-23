@@ -378,8 +378,6 @@ while (true)
 '''
 
 classic_def_no_qubit_instruction = '''
-qubit[5] targets;
-
 def my_subroutine(int a1, float a2) -> int {
     if (a1 >= 2) {
         return 0;
@@ -428,3 +426,56 @@ array[int[8], 5] my_arr2;
 array_sub(my_arr1, my_arr2);
 '''
 
+classic_def_instruction = '''
+qubit qb;
+qubit[5] qbs;
+bit cb;
+bit[5] cbs;
+int test = 20;
+
+def f1(qubit q) {
+    x q;
+}
+
+def f2(qubit q1, qubit q2) {
+    h q1;
+    ctrl @ x q1, q2;
+}
+
+def f3(qubit[5] q) {
+    for int i in [0 : 4] {
+        z q[i];
+    }
+}
+
+def f4(qubit[5] q, bit[5] b) -> bit {
+    ctrl @ x b[0], q[0];
+    ctrl @ x b[1], q[1];
+
+    b[2] = measure q2;
+    
+    if (b[3] == 1) {
+        b[2] << 1;
+    }
+
+    return b[2];
+}
+
+def f5(qubit q, int v, bit b) -> int{
+    b = measure q;
+
+    if (b == 0) {
+        v += 10;
+    } else {
+        v -= 10;
+    }
+
+    return v;
+}
+
+f1(qb);
+f2(qbs[0], qbs[1]);
+f3(qbs);
+cb = f4(qbs, cbs);
+int var = f5(qb, test, cbs[3]);
+'''

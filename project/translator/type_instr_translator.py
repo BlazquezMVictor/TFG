@@ -146,17 +146,19 @@ def get_qu_bit(line, line_index):
 
         for i in range(line_index, len(line)):
             item = line[i]
-            if item  == ",":    break
-            if item == "]":     return name, int(qu_bit_index), i + 2    # +2 because of the ']' and the following ','
-            if read:            qu_bit_index += item
-            if item == "[":     read = True
+            if item  == ",":                    break
+            if item == "]":
+                if qu_bit_index.isdigit():      return name, int(qu_bit_index), i + 2    # +2 because of the ']' and the following ','
+                else:                           return name, qu_bit_index, i + 2    # +2 because of the ']' and the following ','
+            if read:                            qu_bit_index += item
+            if item == "[":                     read = True
 
         return name, -1, line_index + 2
 
 def get_indexes(key, name, index, translated_code_info):
     global custom_gate_qargs
 
-    if not TranslatorUtils.is_custom_gate:
+    if not TranslatorUtils.is_custom_gate and not TranslatorUtils.is_custom_def:
         qsimov_start_index = translated_code_info[key][name]["start_index"]
 
         if index != -1:
@@ -168,8 +170,14 @@ def get_indexes(key, name, index, translated_code_info):
 
         return indexes
     
-    else:
+    elif not TranslatorUtils.is_custom_def:
         return [custom_gate_qargs[name]]        # Return as list to keep format from normal flow
+    
+    else:
+        if index != -1:
+            return f"{name}[{index}]"
+        else:
+            return name
 
 class DataTypeTranslator:
     def __init__(self):
@@ -1278,6 +1286,7 @@ def rotr(array, distance):
                     line.pop(comma_index)
 
             except ValueError:
+                # Add last parameter as in this case there are no more key ','
                 if line[0] in translator_utils.data_types:
                     type = line[0]
                     var_id = line[-1]
@@ -1373,6 +1382,8 @@ def rotr(array, distance):
         return get_expression(line) + ":"
 
     def translate_def(self, line, translated_code_info):
+        TranslatorUtils.is_custom_def = True
+
         open_bracket_index = line.index("(")
         close_bracket_index = line.index(")")
 
@@ -1387,7 +1398,7 @@ def rotr(array, distance):
         is_first_param = True
 
         for i in range(amount_params):
-            translated_code_info[translator_utils.KEY_VARS_REF][var_ids[i]] = {"id":var_ids[i], "type": types[i]}
+            translated_code_info[translator_utils.KEY_SUBROUTINE_PARAMS][var_ids[i]] = {"id":var_ids[i], "type": types[i]}
             
             if is_first_param:
                 is_first_param = False
@@ -1419,4 +1430,11 @@ def rotr(array, distance):
         return f"{TranslatorUtils.QCircuit_name}.add_operation(\"END\")"
 
     def translate_custom_def(self, line, translated_code_info):
+        # TODO:
+        # habria que setear un booleano a true para decirle al resto de funciones que ya no tienen que buscar el indice asociado al qubit
+        # puesto que ahora la propia variable es el indice, simplemente se pone en la traduccion y ya esta
+        # En la llamada a la funcion habria que pasar la lista de las ids de los registros correspondientes
+        # Poner los parametros de la funcion en un diccionario a parte, no el de KEY_VAR_REF, para que no chafen otras referencias con la misma id
+        # TODO:
+        # hacer la traducion de operacion de variables pero con los parametros de las funciones
         return get_expression(line)

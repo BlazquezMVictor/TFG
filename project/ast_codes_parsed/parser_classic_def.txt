@@ -1,7 +1,7 @@
 program
   version
     OPENQASM
-    3
+    3.0
     ;
   statementOrScope
     statement
@@ -14,95 +14,124 @@ program
       quantumDeclarationStatement
         qubitType
           qubit
+        qb
+        ;
+  statementOrScope
+    statement
+      quantumDeclarationStatement
+        qubitType
+          qubit
           designator
             [
             expression
               5
             ]
-        targets
+        qbs
+        ;
+  statementOrScope
+    statement
+      classicalDeclarationStatement
+        scalarType
+          bit
+        cb
+        ;
+  statementOrScope
+    statement
+      classicalDeclarationStatement
+        scalarType
+          bit
+          designator
+            [
+            expression
+              5
+            ]
+        cbs
+        ;
+  statementOrScope
+    statement
+      classicalDeclarationStatement
+        scalarType
+          int
+        test
+        =
+        declarationExpression
+          expression
+            20
         ;
   statementOrScope
     statement
       defStatement
         def
-        my_subroutine
+        f1
         (
         argumentDefinitionList
           argumentDefinition
-            scalarType
-              int
-            a1
-          ,
-          argumentDefinition
-            scalarType
-              float
-            a2
+            qubitType
+              qubit
+            q
         )
-        returnSignature
-          ->
-          scalarType
-            int
         scope
           {
           statementOrScope
             statement
-              ifStatement
-                if
-                (
-                expression
-                  expression
-                    a1
-                  >=
-                  expression
-                    2
-                )
-                statementOrScope
-                  scope
-                    {
-                    statementOrScope
-                      statement
-                        returnStatement
-                          return
-                          expression
-                            0
-                          ;
-                    }
-          statementOrScope
-            statement
-              ifStatement
-                if
-                (
-                expression
-                  expression
-                    a2
-                  <=
-                  expression
-                    2
-                )
-                statementOrScope
-                  scope
-                    {
-                    statementOrScope
-                      statement
-                        returnStatement
-                          return
-                          expression
-                            0
-                          ;
-                    }
-          statementOrScope
-            statement
-              returnStatement
-                return
-                expression
-                  1
+              gateCallStatement
+                x
+                gateOperandList
+                  gateOperand
+                    indexedIdentifier
+                      q
                 ;
           }
   statementOrScope
     statement
       defStatement
         def
-        my_subroutine_2
+        f2
+        (
+        argumentDefinitionList
+          argumentDefinition
+            qubitType
+              qubit
+            q1
+          ,
+          argumentDefinition
+            qubitType
+              qubit
+            q2
+        )
+        scope
+          {
+          statementOrScope
+            statement
+              gateCallStatement
+                h
+                gateOperandList
+                  gateOperand
+                    indexedIdentifier
+                      q1
+                ;
+          statementOrScope
+            statement
+              gateCallStatement
+                gateModifier
+                  ctrl
+                  @
+                x
+                gateOperandList
+                  gateOperand
+                    indexedIdentifier
+                      q1
+                  ,
+                  gateOperand
+                    indexedIdentifier
+                      q2
+                ;
+          }
+  statementOrScope
+    statement
+      defStatement
+        def
+        f3
         (
         argumentDefinitionList
           argumentDefinition
@@ -139,7 +168,7 @@ program
                     statementOrScope
                       statement
                         gateCallStatement
-                          x
+                          z
                           gateOperandList
                             gateOperand
                               indexedIdentifier
@@ -156,13 +185,28 @@ program
     statement
       defStatement
         def
-        xmeasure
+        f4
         (
         argumentDefinitionList
           argumentDefinition
             qubitType
               qubit
+              designator
+                [
+                expression
+                  5
+                ]
             q
+          ,
+          argumentDefinition
+            scalarType
+              bit
+              designator
+                [
+                expression
+                  5
+                ]
+            b
         )
         returnSignature
           ->
@@ -173,102 +217,108 @@ program
           statementOrScope
             statement
               gateCallStatement
-                h
+                gateModifier
+                  ctrl
+                  @
+                x
                 gateOperandList
                   gateOperand
                     indexedIdentifier
+                      b
+                      indexOperator
+                        [
+                        expression
+                          0
+                        ]
+                  ,
+                  gateOperand
+                    indexedIdentifier
                       q
+                      indexOperator
+                        [
+                        expression
+                          0
+                        ]
                 ;
           statementOrScope
             statement
-              returnStatement
-                return
+              gateCallStatement
+                gateModifier
+                  ctrl
+                  @
+                x
+                gateOperandList
+                  gateOperand
+                    indexedIdentifier
+                      b
+                      indexOperator
+                        [
+                        expression
+                          1
+                        ]
+                  ,
+                  gateOperand
+                    indexedIdentifier
+                      q
+                      indexOperator
+                        [
+                        expression
+                          1
+                        ]
+                ;
+          statementOrScope
+            statement
+              assignmentStatement
+                indexedIdentifier
+                  b
+                  indexOperator
+                    [
+                    expression
+                      2
+                    ]
+                =
                 measureExpression
                   measure
                   gateOperand
                     indexedIdentifier
-                      q
+                      q2
                 ;
-          }
-  statementOrScope
-    statement
-      constDeclarationStatement
-        const
-        scalarType
-          int
-        n
-        =
-        declarationExpression
-          expression
-            10
-        ;
-  statementOrScope
-    statement
-      defStatement
-        def
-        parity
-        (
-        argumentDefinitionList
-          argumentDefinition
-            scalarType
-              bit
-              designator
-                [
+          statementOrScope
+            statement
+              ifStatement
+                if
+                (
                 expression
-                  n
-                ]
-            cin
-        )
-        returnSignature
-          ->
-          scalarType
-            bit
-        scope
-          {
-          statementOrScope
-            statement
-              classicalDeclarationStatement
-                scalarType
-                  bit
-                c
-                ;
-          statementOrScope
-            statement
-              forStatement
-                for
-                scalarType
-                  int
-                i
-                in
-                [
-                rangeExpression
-                  expression
-                    0
-                  :
                   expression
                     expression
-                      n
-                    -
-                    expression
-                      1
-                ]
+                      b
+                    indexOperator
+                      [
+                      expression
+                        3
+                      ]
+                  ==
+                  expression
+                    1
+                )
                 statementOrScope
                   scope
                     {
                     statementOrScope
                       statement
-                        assignmentStatement
-                          indexedIdentifier
-                            c
-                          ^=
+                        expressionStatement
                           expression
                             expression
-                              cin
-                            indexOperator
-                              [
                               expression
-                                i
-                              ]
+                                b
+                              indexOperator
+                                [
+                                expression
+                                  2
+                                ]
+                            <<
+                            expression
+                              1
                           ;
                     }
           statementOrScope
@@ -276,337 +326,193 @@ program
               returnStatement
                 return
                 expression
-                  c
+                  expression
+                    b
+                  indexOperator
+                    [
+                    expression
+                      2
+                    ]
                 ;
           }
   statementOrScope
     statement
       defStatement
         def
-        array_sub
+        f5
         (
         argumentDefinitionList
           argumentDefinition
-            arrayReferenceType
-              readonly
-              array
-              [
-              scalarType
-                int
-                designator
-                  [
-                  expression
-                    8
-                  ]
-              ,
-              expressionList
-                expression
-                  2
-                ,
-                expression
-                  10
-              ]
-            arr1
+            qubitType
+              qubit
+            q
           ,
           argumentDefinition
-            arrayReferenceType
-              mutable
-              array
-              [
-              scalarType
-                int
-                designator
-                  [
-                  expression
-                    8
-                  ]
-              ,
-              #dim
-              =
-              expression
-                1
-              ]
-            arr2
+            scalarType
+              int
+            v
+          ,
+          argumentDefinition
+            scalarType
+              bit
+            b
         )
+        returnSignature
+          ->
+          scalarType
+            int
         scope
           {
           statementOrScope
             statement
               assignmentStatement
                 indexedIdentifier
-                  aar2
-                  indexOperator
-                    [
-                    expression
-                      2
-                    ]
+                  b
                 =
+                measureExpression
+                  measure
+                  gateOperand
+                    indexedIdentifier
+                      q
+                ;
+          statementOrScope
+            statement
+              ifStatement
+                if
+                (
                 expression
-                  10
-                ;
-          statementOrScope
-            statement
-              classicalDeclarationStatement
-                scalarType
-                  uint
-                  designator
-                    [
-                    expression
-                      32
-                    ]
-                dim1
-                =
-                declarationExpression
                   expression
-                    sizeof
-                    (
-                    expressionList
-                      expression
-                        arr1
-                      ,
-                      expression
-                        1
-                    )
-                ;
-          statementOrScope
-            statement
-              classicalDeclarationStatement
-                scalarType
-                  uint
-                  designator
-                    [
-                    expression
-                      32
-                    ]
-                dim2
-                =
-                declarationExpression
+                    b
+                  ==
                   expression
-                    sizeof
-                    (
-                    expressionList
-                      expression
-                        expression
-                          arr1
-                        indexOperator
-                          [
+                    0
+                )
+                statementOrScope
+                  scope
+                    {
+                    statementOrScope
+                      statement
+                        assignmentStatement
+                          indexedIdentifier
+                            v
+                          +=
                           expression
-                            0
-                          ]
-                      ,
-                      expression
-                        0
-                    )
+                            10
+                          ;
+                    }
+                else
+                statementOrScope
+                  scope
+                    {
+                    statementOrScope
+                      statement
+                        assignmentStatement
+                          indexedIdentifier
+                            v
+                          -=
+                          expression
+                            10
+                          ;
+                    }
+          statementOrScope
+            statement
+              returnStatement
+                return
+                expression
+                  v
                 ;
           }
   statementOrScope
     statement
-      classicalDeclarationStatement
-        scalarType
-          int
-        result
-        =
-        declarationExpression
-          expression
-            my_subroutine
-            (
-            expressionList
-              expression
-                1
-              ,
-              expression
-                5
-            )
+      expressionStatement
+        expression
+          f1
+          (
+          expressionList
+            expression
+              qb
+          )
         ;
   statementOrScope
     statement
       expressionStatement
         expression
-          my_subroutine_2
-          (
-          expressionList
-            expression
-              targets
-          )
-        ;
-  statementOrScope
-    statement
-      assignmentStatement
-        indexedIdentifier
-          result
-        =
-        expression
-          xmeasure
+          f2
           (
           expressionList
             expression
               expression
-                targets
+                qbs
               indexOperator
                 [
                 expression
                   0
                 ]
-          )
-        ;
-  statementOrScope
-    statement
-      quantumDeclarationStatement
-        qubitType
-          qubit
-        q
-        ;
-  statementOrScope
-    statement
-      quantumDeclarationStatement
-        qubitType
-          qubit
-        r
-        ;
-  statementOrScope
-    statement
-      classicalDeclarationStatement
-        scalarType
-          bit
-        c
-        =
-        declarationExpression
-          measureExpression
-            measure
-            gateOperand
-              indexedIdentifier
-                q
-        ;
-  statementOrScope
-    statement
-      classicalDeclarationStatement
-        scalarType
-          bit
-        c2
-        =
-        declarationExpression
-          measureExpression
-            measure
-            gateOperand
-              indexedIdentifier
-                r
-        ;
-  statementOrScope
-    statement
-      classicalDeclarationStatement
-        scalarType
-          bit
-          designator
-            [
-            expression
-              2
-            ]
-        param
-        ;
-  statementOrScope
-    statement
-      assignmentStatement
-        indexedIdentifier
-          param
-          indexOperator
-            [
-            expression
-              0
-            ]
-        =
-        expression
-          c
-        ;
-  statementOrScope
-    statement
-      assignmentStatement
-        indexedIdentifier
-          param
-          indexOperator
-            [
-            expression
-              1
-            ]
-        =
-        expression
-          c2
-        ;
-  statementOrScope
-    statement
-      classicalDeclarationStatement
-        scalarType
-          bit
-        result
-        ;
-  statementOrScope
-    statement
-      assignmentStatement
-        indexedIdentifier
-          result
-        =
-        expression
-          parity
-          (
-          expressionList
-            expression
-              param
-          )
-        ;
-  statementOrScope
-    statement
-      classicalDeclarationStatement
-        arrayType
-          array
-          [
-          scalarType
-            int
-            designator
-              [
-              expression
-                8
-              ]
-          ,
-          expressionList
-            expression
-              3
             ,
             expression
-              5
-          ]
-        my_arr1
-        ;
-  statementOrScope
-    statement
-      classicalDeclarationStatement
-        arrayType
-          array
-          [
-          scalarType
-            int
-            designator
-              [
               expression
-                8
-              ]
-          ,
-          expressionList
-            expression
-              5
-          ]
-        my_arr2
+                qbs
+              indexOperator
+                [
+                expression
+                  1
+                ]
+          )
         ;
   statementOrScope
     statement
       expressionStatement
         expression
-          array_sub
+          f3
           (
           expressionList
             expression
-              my_arr1
+              qbs
+          )
+        ;
+  statementOrScope
+    statement
+      assignmentStatement
+        indexedIdentifier
+          cb
+        =
+        expression
+          f4
+          (
+          expressionList
+            expression
+              qbs
             ,
             expression
-              my_arr2
+              cbs
           )
+        ;
+  statementOrScope
+    statement
+      classicalDeclarationStatement
+        scalarType
+          int
+        var
+        =
+        declarationExpression
+          expression
+            f5
+            (
+            expressionList
+              expression
+                qb
+              ,
+              expression
+                test
+              ,
+              expression
+                expression
+                  cbs
+                indexOperator
+                  [
+                  expression
+                    3
+                  ]
+            )
         ;
   <EOF>
