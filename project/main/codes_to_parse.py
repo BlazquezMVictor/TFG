@@ -80,16 +80,16 @@ code = '''
 
     let io = input_qubit;
     for uint i in [0: n_pairs - 1] {
-    let bp = q[{2*i, 2*i + 1}];
-    bit[2] pf;
-    bellprep bp;
-    cx io, bp[0];
-    h io;
-    pf[0] = measure io;
-    pf[1] = measure bp[0];
-    if (pf[0]==1) z bp[1];
-    if (pf[1]==1) x bp[1];
-    let io = bp[1];
+        let bp = q[{2*i, 2*i + 1}];
+        bit[2] pf;
+        bellprep bp;
+        cx io, bp[0];
+        h io;
+        pf[0] = measure io;
+        pf[1] = measure bp[0];
+        if (pf[0]==1) z bp[1];
+        if (pf[1]==1) x bp[1];
+        let io = bp[1];
     }
 
     h io;
@@ -479,3 +479,40 @@ f3(qbs);
 cb = f4(qbs, cbs);
 int var = f5(qb, test, cbs[3]);
 '''
+
+program = '''
+float[64] a = 10;
+qubit[3] q;
+bit[2] mid;
+bit[3] out;
+
+let aliased = q[0:1];
+
+gate my_gate(a) c, t {
+    ry(a) c;
+    cx c, t;
+}
+gate my_phase(a) c {
+    ctrl @ rz(a) c;
+}
+
+my_gate(a * 2) q[0], q[0];
+mid[0] = measure q[0];
+mid[1] = measure q[1];
+
+while (mid == "00") {
+    reset q[0];
+    reset q[1];
+    my_gate(a) q[0], q[1];
+    my_phase(a - pi/2) q[1];
+    mid[0] = measure q[0];
+    mid[1] = measure q[1];
+}
+
+if (mid[0]) {
+    let inner_alias = q[0:1];
+}
+
+out = measure q;
+'''
+
