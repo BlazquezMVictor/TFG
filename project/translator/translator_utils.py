@@ -46,9 +46,9 @@ class TranslatorUtils:
             '>>': '>>',
             '|': '|',
             '&': '&',
-            '~': "-",
-            "&&": "and",
-            "||": "or",
+            '~': '-',
+            '&&': 'and',
+            '||': 'or',
         }
         self.comments = {
             "//": "#",
@@ -82,11 +82,6 @@ class TranslatorUtils:
             "ℇ": "np.e",
             "im": "j"
         }
-        
-        # TODO:
-        # Hacer .real y .imag bien
-        # TODO:
-        # Traducir sizeof
         self.builtin_functions = {
             "arcos": "np.arccos",
             "arsin": "np.arcsin",
@@ -141,7 +136,7 @@ class TranslatorUtils:
             "inv": "translate_mod",
             "pow": "translate_mod",
             # "gate": "translate_gate",       # Puede ocupar mas de una linea
-            # "reset": "translate_reset",
+            "reset": "translate_reset",
             # "measure": "translate_measure",
             "barrier": "translate_barrier",
         }

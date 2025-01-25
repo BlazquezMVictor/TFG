@@ -17,7 +17,7 @@ os.system("cls")
 # Mirar el final de los tipos de la documentacion ("Register concatenation and slicing", "Classical value bit slicing", "Array concatenation and slicing")
 
 parsed_codes_folder = "ast_codes_parsed"
-# filename = "parser_code.txt"
+filename = "parser_code.txt"
 # filename = "parser_data_types.txt"
 # filename = "parser_complex.txt"
 # filename = "parser_stdgates.txt"
@@ -30,7 +30,8 @@ parsed_codes_folder = "ast_codes_parsed"
 # filename = "parser_classic_while.txt"
 # filename = "parser_classic_def.txt"
 # filename = "parser_classic_def_no_qubit.txt"
-filename = "parser_program.txt"
+# filename = "parser_program.txt"
+# filename = "parser_test.txt"
 
 grammar_words = {
     "program",
