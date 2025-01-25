@@ -48,6 +48,8 @@ stdgates_with_params = {
 }
 custom_gate_qargs = {}
 
+# TODO:
+# traducir el acceso a arrays bien, my_array[0, 2:3] -> my_array[0][2:3]
 def get_expression(line, is_array=False):
         is_casting = False
         expression = ""
@@ -158,6 +160,7 @@ def get_qu_bit(line, line_index):
 def get_indexes(key, name, index, translated_code_info):
     global custom_gate_qargs
 
+    # Normal case
     if not TranslatorUtils.is_custom_gate and not TranslatorUtils.is_custom_def:
         qsimov_start_index = translated_code_info[key][name]["start_index"]
 
@@ -170,9 +173,11 @@ def get_indexes(key, name, index, translated_code_info):
 
         return indexes
     
+    # Translating a custom gate
     elif not TranslatorUtils.is_custom_def:
         return [custom_gate_qargs[name]]        # Return as list to keep format from normal flow
     
+    # Translating a custom def
     else:
         if index != -1:
             return f"{name}[{index}]"
@@ -405,6 +410,8 @@ class DataTypeTranslator:
         '''
         # TODO:
         # Implementar solucion para el ultimo UC
+        # TODO:
+        # Que se pueda accerder al let como a cualquier otra variable
 
         eq_symbol_index = self.get_eq_symbol_index(line)
         
@@ -423,8 +430,6 @@ class DataTypeTranslator:
 
 # TODO:
 # mirar que tambien se acepte qubit[2:4] etc
-# TODO:
-# cambiar el nombre de las puertas y usar el diccionario 'stdgates_open_to_qsimov'
 class STDGateTranslator:
     def __init__(self):
         self.S_matrix = Matrix([[1, 0], [0, 1j]])
@@ -1013,14 +1018,19 @@ class GateOperationTranslator:
         while line_index < len(line):
             qubit_name, qubit_index, line_index = get_qu_bit(line, line_index)
 
-            if TranslatorUtils.is_custom_gate:                                              key = translator_utils.KEY_QUBITS
-            elif qubit_name in translated_code_info[translator_utils.KEY_QUBITS]:           key = translator_utils.KEY_QUBITS
-            elif qubit_name in translated_code_info[translator_utils.KEY_CUSTOM_GATES]:     key = translator_utils.KEY_QUBITS
-            else:                                                                           key = translator_utils.KEY_BITS
+            if TranslatorUtils.is_custom_def:
+                if translated_code_info[translator_utils.KEY_SUBROUTINE_PARAMS][qubit_name]["type"] == "qubit":     key = translator_utils.KEY_QUBITS
+                elif translated_code_info[translator_utils.KEY_SUBROUTINE_PARAMS][qubit_name]["type"] == "bit":     key = translator_utils.KEY_BITS
+
+            elif TranslatorUtils.is_custom_gate:                                                                    key = translator_utils.KEY_QUBITS
+            elif qubit_name in translated_code_info[translator_utils.KEY_QUBITS]:                                   key = translator_utils.KEY_QUBITS
+            elif qubit_name in translated_code_info[translator_utils.KEY_CUSTOM_GATES]:                             key = translator_utils.KEY_QUBITS
+            else:                                                                                                   key = translator_utils.KEY_BITS
 
             qubits = get_indexes(key, qubit_name, qubit_index, translated_code_info)
 
-            mod_qu_bits.append((qubits, key))
+            if TranslatorUtils.is_custom_def:       mod_qu_bits.append(([qubits], key))
+            else:                                   mod_qu_bits.append((qubits, key))
 
         return mod_qu_bits, line_index
     
@@ -1044,6 +1054,69 @@ class GateOperationTranslator:
 
             i = param
     
+    def rewrite_anti_controls(self, q_controls, q_anticontrols, c_controls, c_anticontrols, targets):
+        # q_controls
+        is_first_item = True
+        list_rewritten = ""
+        for item in q_controls:
+            if is_first_item:
+                is_first_item = False
+                list_rewritten += item
+            else:
+                list_rewritten += f", {item}"
+        if list_rewritten:      rewritten_q_controls = f"{list_rewritten}"
+        else:                   rewritten_q_controls = ""
+
+        # q_anticontrols
+        is_first_item = True
+        list_rewritten = ""
+        for item in q_anticontrols:
+            if is_first_item:
+                is_first_item = False
+                list_rewritten += item
+            else:
+                list_rewritten += f", {item}"
+        if list_rewritten:      rewritten_q_anticontrols = f"{list_rewritten}"
+        else:                   rewritten_q_anticontrols = ""
+
+        # c_controls
+        is_first_item = True
+        list_rewritten = ""
+        for item in c_controls:
+            if is_first_item:
+                is_first_item = False
+                list_rewritten += item
+            else:
+                list_rewritten += f", {item}"
+        if list_rewritten:      rewritten_c_controls = f"{list_rewritten}"
+        else:                   rewritten_c_controls = ""
+
+        # c_anticontrols
+        is_first_item = True
+        list_rewritten = ""
+        for item in c_anticontrols:
+            if is_first_item:
+                is_first_item = False
+                list_rewritten += item
+            else:
+                list_rewritten += f", {item}"
+        if list_rewritten:      rewritten_c_anticontrols = f"{list_rewritten}"
+        else:                   rewritten_c_anticontrols = ""
+
+        # targets
+        is_first_item = True
+        list_rewritten = ""
+        for item in targets:
+            if is_first_item:
+                is_first_item = False
+                list_rewritten += item
+            else:
+                list_rewritten += f", {item}"
+        if list_rewritten:      rewritten_targets = f"{list_rewritten}"
+        else:                   rewritten_targets = ""
+
+        return rewritten_q_controls, rewritten_q_anticontrols, rewritten_c_controls, rewritten_c_anticontrols, rewritten_targets
+        
     # TODO:
     # permitir el uso de puertas propias del usuario (gate my_gate ...)
     def translate_mod(self, line, translated_code_info):
@@ -1089,26 +1162,29 @@ class GateOperationTranslator:
         
             else:
                 t_gate = f"f{gate}()"
-        
-        t_controls = f", controls={q_controls}"                         if q_controls       else ""
-        t_anticontrols = f", anticontrols={q_anticontrols}"             if q_anticontrols   else ""
-        t_c_controls = f", c_controls={c_controls}"                     if c_controls       else ""
-        t_c_anticontrols = f", c_anticontrols={c_anticontrols}"         if c_anticontrols   else ""
 
         # Get the target qubits
         qubits = []
         for qubit in mod_qu_bits:
             qubits += qubit[0]
 
-        t_targets = set(qubits) - set(q_controls)
-        t_targets -= set(q_anticontrols)
-        t_targets -= set(c_controls)
-        t_targets -= set(c_anticontrols)
-        t_targets = list(t_targets)
+        targets = set(qubits) - set(q_controls)
+        targets -= set(q_anticontrols)
+        targets -= set(c_controls)
+        targets -= set(c_anticontrols)
+        targets = list(targets)
+
+        if TranslatorUtils.is_custom_def:
+            q_controls, q_anticontrols, c_controls, c_anticontrols, targets = self.rewrite_anti_controls(q_controls, q_anticontrols, c_controls, c_anticontrols, targets)
+
+        t_targets = f"targets={targets}"
+        t_controls = f", controls={q_controls}"                         if q_controls       else ""
+        t_anticontrols = f", anticontrols={q_anticontrols}"             if q_anticontrols   else ""
+        t_c_controls = f", c_controls={c_controls}"                     if c_controls       else ""
+        t_c_anticontrols = f", c_anticontrols={c_anticontrols}"         if c_anticontrols   else ""
 
         # Build the translation
-        translation =  f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={t_targets}{t_controls}"
-        translation += f"{t_anticontrols}{t_c_controls}{t_c_anticontrols})"
+        translation =  f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, {t_targets}{t_controls}{t_anticontrols}{t_c_controls}{t_c_anticontrols})"
 
         # TODO:
         # terminar con los modificadores 'inv' y 'pow'
@@ -1429,12 +1505,7 @@ def rotr(array, distance):
     def translate_end(self, line, translated_code_info):
         return f"{TranslatorUtils.QCircuit_name}.add_operation(\"END\")"
 
+    # TODO:
+    # En la llamada a la funcion habria que pasar la lista de las ids de los registros correspondientes
     def translate_custom_def(self, line, translated_code_info):
-        # TODO:
-        # habria que setear un booleano a true para decirle al resto de funciones que ya no tienen que buscar el indice asociado al qubit
-        # puesto que ahora la propia variable es el indice, simplemente se pone en la traduccion y ya esta
-        # En la llamada a la funcion habria que pasar la lista de las ids de los registros correspondientes
-        # Poner los parametros de la funcion en un diccionario a parte, no el de KEY_VAR_REF, para que no chafen otras referencias con la misma id
-        # TODO:
-        # hacer la traducion de operacion de variables pero con los parametros de las funciones
         return get_expression(line)

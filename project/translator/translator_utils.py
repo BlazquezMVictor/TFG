@@ -141,7 +141,7 @@ class TranslatorUtils:
             "inv": "translate_mod",
             "pow": "translate_mod",
             # "gate": "translate_gate",       # Puede ocupar mas de una linea
-            "reset": "translate_reset",
+            # "reset": "translate_reset",
             # "measure": "translate_measure",
             "barrier": "translate_barrier",
         }
@@ -152,7 +152,7 @@ class TranslatorUtils:
             "else": "translate_if_else",
             "for": "translate_for",       # Puede ocupar mas de una linea
             "while": "translate_while",   # Puede ocupar mas de una linea
-            "def": "translate_def",           # Puede ocupar mas de una linea
+            # "def": "translate_def",           # Puede ocupar mas de una linea
             "break": "translate_break",
             "continue": "translate_continue",
             "return": "translate_return",

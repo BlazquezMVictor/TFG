@@ -28,8 +28,9 @@ parsed_codes_folder = "ast_codes_parsed"
 # filename = "parser_classic_if.txt"
 # filename = "parser_classic_for.txt"
 # filename = "parser_classic_while.txt"
-filename = "parser_classic_def.txt"
+# filename = "parser_classic_def.txt"
 # filename = "parser_classic_def_no_qubit.txt"
+filename = "parser_program.txt"
 
 grammar_words = {
     "program",
@@ -241,6 +242,8 @@ def remove_scope_brackets(code):
 if __name__ == "__main__":
     translate = True
     # translate = False
+    debug = True
+    # debug = False
     with open(MAIN_PARENT_PATH + "/" + parsed_codes_folder + "/" + filename, "r") as file:
         txt = file.read()
 
@@ -253,10 +256,19 @@ if __name__ == "__main__":
         remove_scope_brackets(result)
 
         if not translate:
-            for line in result:
-                print(f"L: {line}")
+            if debug:
+                for line in result:
+                    print(f"L: {line}")
+            else:
+                for line in result:
+                    print(line)
+                    
         else:
             translated_code = translator.translate(result)
 
-            for line in translated_code:
-                print(f"L: {line}")
+            if debug:
+                for line in translated_code:
+                    print(f"L: {line}")
+            else:
+                for line in translated_code:
+                    print(line)
