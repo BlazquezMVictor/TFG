@@ -82,18 +82,22 @@ code = '''
     for uint i in [0: n_pairs - 1] {
         let bp = q[{2*i, 2*i + 1}];
         bit[2] pf;
-        bellprep bp;
+        bellprep(bp);
         cx io, bp[0];
         h io;
         pf[0] = measure io;
         pf[1] = measure bp[0];
-        if (pf[0]==1) z bp[1];
-        if (pf[1]==1) x bp[1];
+        if (pf[0]==1) {
+            z bp[1];
+        }
+        if (pf[1]==1)   {
+            x bp[1];
+        }
         let io = bp[1];
     }
 
     h io;
-    output_qubit = measure io;  // should get zero
+    output_qubit = measure io;
 '''
 
 stdgates = '''

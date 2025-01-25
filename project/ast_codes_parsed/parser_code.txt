@@ -1,7 +1,7 @@
 program
   version
     OPENQASM
-    3
+    3.0
     ;
   statementOrScope
     statement
@@ -263,12 +263,14 @@ program
                   ;
             statementOrScope
               statement
-                gateCallStatement
-                  bellprep
-                  gateOperandList
-                    gateOperand
-                      indexedIdentifier
+                expressionStatement
+                  expression
+                    bellprep
+                    (
+                    expressionList
+                      expression
                         bp
+                    )
                   ;
             statementOrScope
               statement
@@ -355,19 +357,23 @@ program
                       1
                   )
                   statementOrScope
-                    statement
-                      gateCallStatement
-                        z
-                        gateOperandList
-                          gateOperand
-                            indexedIdentifier
-                              bp
-                              indexOperator
-                                [
-                                expression
-                                  1
-                                ]
-                        ;
+                    scope
+                      {
+                      statementOrScope
+                        statement
+                          gateCallStatement
+                            z
+                            gateOperandList
+                              gateOperand
+                                indexedIdentifier
+                                  bp
+                                  indexOperator
+                                    [
+                                    expression
+                                      1
+                                    ]
+                            ;
+                      }
             statementOrScope
               statement
                 ifStatement
@@ -387,19 +393,23 @@ program
                       1
                   )
                   statementOrScope
-                    statement
-                      gateCallStatement
-                        x
-                        gateOperandList
-                          gateOperand
-                            indexedIdentifier
-                              bp
-                              indexOperator
-                                [
-                                expression
-                                  1
-                                ]
-                        ;
+                    scope
+                      {
+                      statementOrScope
+                        statement
+                          gateCallStatement
+                            x
+                            gateOperandList
+                              gateOperand
+                                indexedIdentifier
+                                  bp
+                                  indexOperator
+                                    [
+                                    expression
+                                      1
+                                    ]
+                            ;
+                      }
             statementOrScope
               statement
                 aliasDeclarationStatement
@@ -439,4 +449,3 @@ program
               io
         ;
   <EOF>
-

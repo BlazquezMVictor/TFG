@@ -50,6 +50,8 @@ custom_gate_qargs = {}
 
 # TODO:
 # Permitir el acceso a las variables de la misma forma que en python (cuanticas y clasicas)
+# TODO:
+# traducir tamien llamadas a funciones
 def get_expression(line, translated_code_info, is_array=False):
     is_casting = False
     expression = ""
@@ -129,14 +131,59 @@ def get_expression(line, translated_code_info, is_array=False):
 
     return expression
 
-def get_param(line, line_index, translated_code_info, is_custom_gate=False):
+def get_all_params(structure_name, line, line_index, translated_code_info, is_custom_gate=False, is_custom_def=False):
+    if is_custom_def:       params = []
+    else:                   params = ""
+    amount_params = 0
+    is_first_param = True
+
+    if structure_name in stdgates_with_params:
+        amount_params = stdgates_with_params[structure_name]
+
+    elif structure_name in translated_code_info[translator_utils.KEY_CUSTOM_GATES]:
+        amount_params = translated_code_info[translator_utils.KEY_CUSTOM_GATES][structure_name]
+
+    elif structure_name in translated_code_info[translator_utils.KEY_SUBROUTINES]:
+        amount_params = translated_code_info[translator_utils.KEY_SUBROUTINES][structure_name]["amount_params"]
+
+    if amount_params > 0:
+        line_index += 1
+        for i in range(amount_params):
+            param, line_index = get_param(line, line_index, translated_code_info, is_custom_gate, is_custom_def)
+
+            if is_custom_def:
+                params.append(param)
+
+            elif is_first_param:
+                is_first_param = False
+                params += param
+            
+            else:
+                params += f", {param}"
+
+    if is_custom_def:       return params, line_index
+    else:                   return f"({params})", line_index
+
+def get_param(line, line_index, translated_code_info, is_custom_gate=False, is_custom_def=False):
     param = []
+    is_between_square_brackets = False
 
     for i in range(line_index, len(line)):
         item = line[i]
-        if item == ")" or item == ",":
+
+        if item == "[":
+            is_between_square_brackets = True
+
+        if item == "]":
+            is_between_square_brackets = False
+
+        if item == ")" or (item == "," and not is_between_square_brackets):
+            if is_custom_def:
+                return param, i + 1                                                       # +1 because of the ')' or ','
+            
             if is_custom_gate:
                 return get_expression(param, translated_code_info), i + 1                 # +1 because of the ')' or ','
+            
             else:
                 return "{" + get_expression(param, translated_code_info) + "}", i + 1     # +1 because of the ')' or ','
         param.append(item)
@@ -427,8 +474,6 @@ class DataTypeTranslator:
         '''
         # TODO:
         # Implementar solucion para el ultimo UC
-        # TODO:
-        # Que se pueda accerder al let como a cualquier otra variable
 
         eq_symbol_index = self.get_eq_symbol_index(line)
         
@@ -443,17 +488,17 @@ class DataTypeTranslator:
 
         if reference_var in translated_code_info[translator_utils.KEY_QUBITS]:
             type = "qubit"
-            qubit_name, index, _ = get_qu_bit(line, eq_symbol_index + 1)
-            indexes = get_indexes(translator_utils.KEY_QUBITS, qubit_name, index, translated_code_info)
+            name, index, _ = get_qu_bit(line, eq_symbol_index + 1)
+            indexes = get_indexes(translator_utils.KEY_QUBITS, name, index, translated_code_info)
 
             translated_code_info[translator_utils.KEY_QUBITS][var_id] = {"start_index": indexes[0], "size": len(indexes)}
 
         elif reference_var in translated_code_info[translator_utils.KEY_BITS]:
             type = "bit"
-            qubit_name, index, _ = get_qu_bit(line, eq_symbol_index + 1)
-            indexes = get_indexes(translator_utils.KEY_QUBITS, qubit_name, index, translated_code_info)
+            name, index, _ = get_qu_bit(line, eq_symbol_index + 1)
+            indexes = get_indexes(translator_utils.KEY_BITS, name, index, translated_code_info)
 
-            translated_code_info[translator_utils.KEY_QUBITS][var_id] = {"start_index": indexes[0], "size": len(indexes)}
+            translated_code_info[translator_utils.KEY_BITS][var_id] = {"start_index": indexes[0], "size": len(indexes)}
 
         else:
             type = translated_code_info[translator_utils.KEY_VARS_REF][reference_var]["type"]
@@ -1022,6 +1067,8 @@ class GateOperationTranslator:
 
         return mod_anti_controls, mod_inv_pow, gate, line_index
     
+    # TODO:
+    # Borrar esta funcion y usar 'get_all_params'
     def get_gate_params(self, gate, line, line_index, translated_code_info, is_custom_gate=False):
         gate_params = ""
         params_amount = 0
@@ -1154,6 +1201,8 @@ class GateOperationTranslator:
         
     # TODO:
     # permitir el uso de puertas propias del usuario (gate my_gate ...)
+    # TODO:
+    # detectar cuando estamos en custom def si el param es cuantico o clasico
     def translate_mod(self, line, translated_code_info):
         '''
         UCs:
@@ -1542,8 +1591,30 @@ def rotr(array, distance):
     def translate_end(self, line, translated_code_info):
         return f"{TranslatorUtils.QCircuit_name}.add_operation(\"END\")"
 
-    # TODO:
-    # En la llamada a la funcion habria que pasar la lista de las ids de los registros correspondientes
+    # NOTE:
+    # The call to the function must be done using brackest to indicate the parameters
     def translate_custom_def(self, line, translated_code_info):
-        if line[1] == "(":      return f"{line[0]}{get_expression(line[1:], translated_code_info)}"
-        else:                   return f"{line[0]}({get_expression(line[1:], translated_code_info)})"
+        def_name = line[0]
+        params, _ = get_all_params(def_name, line, 1, translated_code_info, is_custom_def=True)
+        t_params = ""
+        is_first_param = True
+        
+        for param in params:
+            if param[0] in translated_code_info[translator_utils.KEY_QUBITS]:
+                qu_bit_name, index, _ = get_qu_bit(param, 0)
+                t_param = get_indexes(translator_utils.KEY_QUBITS, qu_bit_name, index, translated_code_info)
+
+            elif param[0] in translated_code_info[translator_utils.KEY_BITS]:
+                qu_bit_name, index, _ = get_qu_bit(param, 0)
+                t_param = get_indexes(translator_utils.KEY_BITS, qu_bit_name, index, translated_code_info)
+
+            else:
+                t_param = get_expression(param, translated_code_info)
+
+            if is_first_param:
+                is_first_param = False
+                t_params += f"{t_param}"
+            else:
+                t_params += f", {t_param}"            
+
+        return f"{def_name}({t_params})"
