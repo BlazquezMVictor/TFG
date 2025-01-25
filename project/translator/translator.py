@@ -56,6 +56,7 @@ class Translator:
             if line[0] == custom_def_init_indent:
                 TranslatorUtils.is_custom_def = False
                 custom_def_init_indent = -1
+                self.translated_code.append("") # Add a blank line after the custom def
 
             # Check measurement
             if "measure" in line[1]:
