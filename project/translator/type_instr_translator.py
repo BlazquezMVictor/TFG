@@ -49,9 +49,36 @@ stdgates_with_params = {
 custom_gate_qargs = {}
 
 # TODO:
-# Permitir el acceso a las variables de la misma forma que en python (cuanticas y clasicas)
+# get_expression -> Traducir bien el acceso a variables de tipo bit
 # TODO:
-# traducir tamien llamadas a funciones
+# Si el tamaño de un registro viene dado por una variable, debo saber el contenido de la misma
+# Esto implica que debo ir actualizando el valor de las variables conforme opero con ellas
+# El problema de esto es si no puedo conocer el valor de la variable
+    # bit c;
+    # c = measure q;
+    # qubit[5 + c] q2;
+# Otro problema es que si es una expresion numerica pero compleja (5 + int(3.5) * var_1), tengo que ejecutarla y conseguir el valor
+# TODO:
+# Evitar añadir bit clasicos al circuito cuando se declaran dentro de bucles o subrutinas
+# TODO:
+# Implementar solucion para 'let my_var = q[{0,3,5}]'
+# TODO:
+# translate_mod -> terminar la traduccion de los modificadores 'inv' y 'pow'
+
+def get_close_bracket_index(line, start_index):
+    bracket_level = 0
+
+    for i in range(start_index, len(line)):
+        if line[i] == "(":
+            bracket_level += 1
+        elif line[i] == ")":
+            bracket_level -= 1
+
+        if bracket_level == 0:
+            return i
+        
+    return start_index
+
 def get_expression(line, translated_code_info, is_array=False):
     is_casting = False
     expression = ""
@@ -80,8 +107,8 @@ def get_expression(line, translated_code_info, is_array=False):
             item = translator_utils.builtin_functions[item]
 
             if item == ".real" or item == ".imag":
-                close_bracket_i = line[i:].index(")")
-                expr = get_expression(line[i+2:close_bracket_i], translated_code_info)    # We add +2 to point to the first relevant intem from '('
+                close_bracket_i = get_close_bracket_index(line, i + 1)                      # We add +1 to point to the first '('
+                expr = get_expression(line[i+2:close_bracket_i], translated_code_info)      # We add +2 to point to the first relevant intem from '('
 
                 if len(expr.split(" ")) > 1:    item = f"({expr}){item}"
                 else:                           item = f"{expr}{item}"
@@ -89,7 +116,7 @@ def get_expression(line, translated_code_info, is_array=False):
                 jumps = close_bracket_i - i
 
             elif item == "len":
-                close_bracket_i = line[i:].index(")")
+                close_bracket_i = get_close_bracket_index(line, i + 1)                      # We add +1 to point to the first '('
                 expr = get_expression(line[i+2:close_bracket_i], translated_code_info)
 
                 var_id = line[i + 2]
@@ -113,6 +140,11 @@ def get_expression(line, translated_code_info, is_array=False):
 
                 jumps = close_bracket_i - i
 
+        elif item in translated_code_info[translator_utils.KEY_SUBROUTINES]:
+            close_bracket_i = get_close_bracket_index(line, i + 1)                              # We add +1 to point to the first '('
+            item = ClassicInstTranslator().translate_custom_def(line[i:close_bracket_i + 1], translated_code_info)  # We add +1 to include close bracket
+
+            jumps = close_bracket_i - i
 
         elif item in translator_utils.math_logic_operators:
             item = translator_utils.math_logic_operators[item]
@@ -246,14 +278,6 @@ class DataTypeTranslator:
         try:        return line.index("=")      # Get '=' occurence index
         except:     return 0                    # Return 0 if it is not in the list
 
-    # TODO:
-    # Si el tamaño del registro viene dado por una variable, debo saber el contenido de la misma
-    # Esto implica que debo ir actualizando el valor de las variables conforme opero con ellas
-    # El problema de esto es si no puedo conocer el valor de la variable
-        # bit c;
-        # c = measure q;
-        # qubit[5 + c] q2;
-    # Otro problema es que si es una expresion numerica pero compleja, tengo que ejecutarla y conseguir el valor
     def translate_qubit(self, line, translated_code_info):
         '''
         UCs:
@@ -279,8 +303,6 @@ class DataTypeTranslator:
 
         return ""
 
-    # TODO:
-    # Evitar añadir bit clasicos al circuito cuando se declaran dentro de bulces o subrutinas
     def translate_bit(self, line, translated_code_info):
         '''
         UCs:
@@ -472,8 +494,6 @@ class DataTypeTranslator:
         let my_var = q[1:4]
         let my_var = q[{0,3,5}]     # It returns the first, fourth and sixth elements
         '''
-        # TODO:
-        # Implementar solucion para el ultimo UC
 
         eq_symbol_index = self.get_eq_symbol_index(line)
         
@@ -525,9 +545,6 @@ class STDGateTranslator:
     def get_T_matrix(self):
         return self.T_matrix
 
-    # TODO:
-    # En el github de openqasm parece que el qubit es de control y lo que se hace es un cambio de fase global
-    # -> gate p(λ) a { ctrl @ gphase(λ) a; }
     def translate_p(self, line, translated_code_info):
         '''
         UC:
@@ -1006,9 +1023,7 @@ class STDGateTranslator:
         return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
 
     def translate_gphase(self, line, translated_code_info):
-        # TODO:
-        # Esto parece que es una builtin function
-        pass
+        raise NotImplementedError("The 'gphase' gate is not implemented yet")
 
 class GateOperationTranslator:
     def __init__(self):
@@ -1066,34 +1081,7 @@ class GateOperationTranslator:
         line_index += 1
 
         return mod_anti_controls, mod_inv_pow, gate, line_index
-    
-    # TODO:
-    # Borrar esta funcion y usar 'get_all_params'
-    def get_gate_params(self, gate, line, line_index, translated_code_info, is_custom_gate=False):
-        gate_params = ""
-        params_amount = 0
-        is_first_param = True
-
-        if gate in stdgates_with_params:
-            params_amount = stdgates_with_params[gate]
-
-        elif gate in translated_code_info[translator_utils.KEY_CUSTOM_GATES]:
-            params_amount = translated_code_info[translator_utils.KEY_CUSTOM_GATES][gate]
-
-        if params_amount > 0:
-            line_index += 1
-            for i in range(params_amount):
-                param, line_index = get_param(line, line_index, translated_code_info, is_custom_gate)
-                
-                if is_first_param:
-                    is_first_param = False
-                    gate_params += param
-                
-                else:
-                    gate_params += f", {param}"
-
-        return f"({gate_params})", line_index
-    
+        
     def get_mod_qu_bits(self, line, line_index, translated_code_info):
         mod_qu_bits = []
 
@@ -1199,10 +1187,6 @@ class GateOperationTranslator:
 
         return rewritten_q_controls, rewritten_q_anticontrols, rewritten_c_controls, rewritten_c_anticontrols, rewritten_targets
         
-    # TODO:
-    # permitir el uso de puertas propias del usuario (gate my_gate ...)
-    # TODO:
-    # detectar cuando estamos en custom def si el param es cuantico o clasico
     def translate_mod(self, line, translated_code_info):
         '''
         UCs:
@@ -1224,7 +1208,7 @@ class GateOperationTranslator:
         mod_anti_controls, mod_inv_pow, gate, line_index = self.get_modifiers(line)
 
         # Get the gate's parameters, if it has
-        gate_params, line_index = self.get_gate_params(gate, line, line_index, translated_code_info)
+        gate_params, line_index = get_all_params(gate, line, line_index, translated_code_info)
 
         # Get in order the qubits/bits used as controls or anticontrols
         mod_qu_bits, line_index = self.get_mod_qu_bits(line, line_index, translated_code_info)
@@ -1269,9 +1253,6 @@ class GateOperationTranslator:
 
         # Build the translation
         translation =  f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, {t_targets}{t_controls}{t_anticontrols}{t_c_controls}{t_c_anticontrols})"
-
-        # TODO:
-        # terminar con los modificadores 'inv' y 'pow'
 
         return translation
 
@@ -1333,7 +1314,7 @@ class GateOperationTranslator:
 
     def translate_custom_gate(self, line, translated_code_info):
         gate = line[0]
-        gate_params, line_index = self.get_gate_params(gate, line, 1, translated_code_info, True)   # starting line_index = 1 to avoid reading '(' as the function also adds 1 to the variable
+        gate_params, line_index = get_all_params(gate, line, 1, translated_code_info, is_custom_gate=True)     # starting line_index = 1 to avoid reading '(' as the function also adds 1 to the variable
         qubits, line_index = self.get_mod_qu_bits(line, line_index, translated_code_info)
         # As the previus methods returns a list of tuples formed by qubit and key, we need to get just the qubits in this case
         t_qubits = []
@@ -1591,10 +1572,11 @@ def rotr(array, distance):
     def translate_end(self, line, translated_code_info):
         return f"{TranslatorUtils.QCircuit_name}.add_operation(\"END\")"
 
-    # NOTE:
-    # The call to the function must be done using brackest to indicate the parameters
     def translate_custom_def(self, line, translated_code_info):
         def_name = line[0]
+
+        if line[1] != "(":      raise ValueError("The call to a custom function must be done using brackets to indicate the parameters")
+
         params, _ = get_all_params(def_name, line, 1, translated_code_info, is_custom_def=True)
         t_params = ""
         is_first_param = True
