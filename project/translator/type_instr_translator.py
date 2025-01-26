@@ -1056,22 +1056,23 @@ class GateOperationTranslator:
 
         return 1, line_index + 2
 
-    def pow_gate(self, exp, gate):
+    def pow_gate(self, exp, gate, translated_code_info):
+        if gate in translated_code_info[translator_utils.KEY_CUSTOM_GATES]:
+            raise NotImplementedError("The 'pow' function is not implemented yet for custom gates")
+        
         gate_matrix = _gate_func[stdgates_open_to_qsimov[gate]]
         return gate_matrix.pow(int(exp))
     
-    def invert_gate(self, matrix):
-        # Verify that the input is square
-        if matrix.shape[0] != matrix.shape[1]:
-            raise ValueError("Input matrix must be square.")
+    def invert_gate(self, gate, translated_code_info):
+        if gate in translated_code_info[translator_utils.KEY_CUSTOM_GATES]:
+            raise NotImplementedError("The 'pow' function is not implemented yet for custom gates")
+        
+        gate_matrix = _gate_func[stdgates_open_to_qsimov[gate]]
 
-        # Compute the inverse
-        try:
-            inverse = matrix.inv()
-        except:
-            raise ValueError("Matrix is singular and cannot be inverted.")
+        transpose = gate_matrix.transpose()
+        conjugate = transpose.conjugate()
 
-        return inverse
+        return conjugate
     
     def get_modifiers(self, line):
         mod_anti_controls = []
