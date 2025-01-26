@@ -20,7 +20,9 @@ class Translator:
             self.translator_utils.KEY_CUSTOM_GATES:         {},
             self.translator_utils.KEY_SUBROUTINES:          {},
             self.translator_utils.KEY_SUBROUTINE_PARAMS:    {},
-            self.translator_utils.KEY_VARS_REF:             {}
+            self.translator_utils.KEY_VARS_REF:             {},
+            self.translator_utils.KEY_NEW_MATRICES:         [],
+            self.translator_utils.KEY_BIT_INITS:            []
         }
         self.translated_code = []
 
@@ -75,7 +77,14 @@ class Translator:
             # Check data type
             elif keyword in self.translator_utils.data_types:
                 method = self.translator_utils.data_types[keyword]
-                translation = getattr(self.data_type_translator, method)(line[1][1:], self.translated_code_info)
+
+                if method == "translate_bit":
+                    if line[0] != 0:    is_global = False
+                    else:               is_global = True
+                    translation = self.data_type_translator.translate_bit(line[1][1:], is_global, self.translated_code_info)
+                
+                else:
+                    translation = getattr(self.data_type_translator, method)(line[1][1:], self.translated_code_info)
 
             # Check std gate
             elif keyword in self.translator_utils.std_gates:

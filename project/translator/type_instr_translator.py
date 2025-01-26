@@ -59,8 +59,6 @@ custom_gate_qargs = {}
     # qubit[5 + c] q2;
 # Otro problema es que si es una expresion numerica pero compleja (5 + int(3.5) * var_1), tengo que ejecutarla y conseguir el valor
 # TODO:
-# Evitar añadir bit clasicos al circuito cuando se declaran dentro de bucles o subrutinas
-# TODO:
 # Implementar solucion para 'let my_var = q[{0,3,5}]'
 # TODO:
 # translate_mod -> terminar la traduccion de los modificadores 'inv' y 'pow'
@@ -303,7 +301,7 @@ class DataTypeTranslator:
 
         return ""
 
-    def translate_bit(self, line, translated_code_info):
+    def translate_bit(self, line, is_global, translated_code_info):
         '''
         UCs:
         bit my_var;
@@ -315,15 +313,14 @@ class DataTypeTranslator:
         bit_amount = 1
         if line[0] == "[":   bit_amount = int(line[1])
         var_id = line[self.get_eq_symbol_index(line) - 1]
+        eq_symbol_index = self.get_eq_symbol_index(line)
 
-        # if eq_symbol_index == 0:
-        #     if bit_amount > 1:      init_value = [0 for i in range(bit_amount)]
-        #     else:                   init_value = 0
-        # else:
-        #     if bit_amount > 1:      init_value = [int(char) for char in line[eq_symbol_index + 1] if char.isdigit()]
-        #     else:                   init_value = line[eq_symbol_index + 1][1]       # We get the number without the '"', that is why we add '[1]' at the end
-
-        # translation = f"{var_id} = {init_value}"
+        if eq_symbol_index == 0:
+            if bit_amount > 1:      init_value = [0 for i in range(bit_amount)]
+            else:                   init_value = 0
+        else:
+            if bit_amount > 1:      init_value = [int(char) for char in line[eq_symbol_index + 1] if char.isdigit()]    # char.isdigit() is used to avoid the '"' character
+            else:                   init_value = line[eq_symbol_index + 1][1]       # We get the number without the '"', that is why we add '[1]' at the end
 
         registered_bits = translated_code_info[translator_utils.KEY_BITS]
         if registered_bits:   
@@ -332,10 +329,27 @@ class DataTypeTranslator:
         else:
             start_index = 0
 
-        translated_code_info[translator_utils.KEY_BITS][var_id] = {"start_index": start_index, "size": bit_amount}
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "bit"}
+        # Differenciate between global and local variable definitions
+        if is_global:
+            translated_code_info[translator_utils.KEY_BITS][var_id] = {"start_index": start_index, "size": bit_amount}
+            translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "bit"}
 
-        return ""
+            if eq_symbol_index != 0:
+                translation = ""
+                for i in range(bit_amount):
+                    bit = init_value[i]
+
+                    if bit == 1:    op = "SET"
+                    else:           op = "RESET"
+                    translation += f"{TranslatorUtils.QCircuit_name}.add_operation(f\"{op}\", c_targets=[{start_index + i}])\n"
+
+                translated_code_info[translator_utils.KEY_BIT_INITS].append(translation)
+            
+            return ""
+        else:
+            translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "int"}
+
+            return f"{var_id}: int = {init_value}"
 
     def translate_int(self, line, translated_code_info):
         '''

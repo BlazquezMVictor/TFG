@@ -18,7 +18,9 @@ class TranslatorUtils:
         self.KEY_CUSTOM_GATES = 2
         self.KEY_SUBROUTINES = 3
         self.KEY_SUBROUTINE_PARAMS = 4
-        self.KEY_VARS_REF = 5
+        self.KEY_VARS_REF = 5,
+        self.KEY_NEW_MATRICES = 6,
+        self.KEY_BIT_INITS = 7,
 
         self.special_chars = {"(", ")", "[", "]", "{", "}", "="}
         self.math_logic_operators = {
