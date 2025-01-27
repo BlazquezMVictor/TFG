@@ -61,7 +61,8 @@ custom_gate_qargs = {}
 # TODO:
 # Implementar solucion para 'let my_var = q[{0,3,5}]'
 # TODO:
-# translate_mod -> terminar la traduccion de los modificadores 'inv' y 'pow'
+# Mirar que no se añadan la inversa de puertas que qsimov ya tiene
+    # No tiene sentido añadir la inversa de 'X' cuando podemos usar 'X-1'
 
 def get_close_bracket_index(line, start_index):
     bracket_level = 0
@@ -162,10 +163,8 @@ def get_expression(line, translated_code_info, is_array=False):
     return expression
 
 def get_all_params(structure_name, line, line_index, translated_code_info, is_custom_gate=False, is_custom_def=False):
-    if is_custom_def:       params = []
-    else:                   params = ""
+    params = []
     amount_params = 0
-    is_first_param = True
 
     if structure_name in stdgates_with_params:
         amount_params = stdgates_with_params[structure_name]
@@ -180,19 +179,9 @@ def get_all_params(structure_name, line, line_index, translated_code_info, is_cu
         line_index += 1
         for i in range(amount_params):
             param, line_index = get_param(line, line_index, translated_code_info, is_custom_gate, is_custom_def)
+            params.append(param)
 
-            if is_custom_def:
-                params.append(param)
-
-            elif is_first_param:
-                is_first_param = False
-                params += param
-            
-            else:
-                params += f", {param}"
-
-    if is_custom_def:       return params, line_index
-    else:                   return f"({params})", line_index
+    return params, line_index
 
 def get_param(line, line_index, translated_code_info, is_custom_gate=False, is_custom_def=False):
     param = []
@@ -267,6 +256,18 @@ def get_indexes(key, name, index, translated_code_info):
             return f"{name}[{index}]"
         else:
             return name
+
+def add_new_gate_matrix(gate, gate_matrix, min_args=0, max_args=0, aliases=[]):
+    if aliases:     t_aliases = f", aliases={aliases}"
+    else:           t_aliases = ""
+    func = f"def add_{gate}():\n"
+    func += f"\treturn {gate_matrix}\n"
+    func += f"{TranslatorUtils.qsimov_name}.add_gate(\"{gate}\", add_{gate}(), {min_args}, {max_args}{t_aliases})\n"
+
+    return func
+
+def list_to_string(list):
+    return ', '.join(map(str, list))
 
 class DataTypeTranslator:
     def __init__(self):
@@ -555,18 +556,6 @@ class STDGateTranslator:
         self.S_gate_aliases = ["s", "sqrtZ", "SqrtZ"]
         self.T_gate_aliases = ["t", "sqrtS", "SqrtS"]
 
-    def add_S_gate(self):
-        func = f"def add_{self.S_gate_name}():\n"
-        func += f"\treturn {self.S_matrix}\n"
-        func += f"{TranslatorUtils.qsimov_name}.add_gate(\"{self.S_gate_name}\", add_{self.S_gate_name}(), 0, 0, aliases={self.S_gate_aliases})\n"
-        return func
-    
-    def add_T_gate(self):
-        func = f"def add_{self.T_gate_name}():\n"
-        func += f"\treturn {self.T_matrix}\n"
-        func += f"{TranslatorUtils.qsimov_name}.add_gate(\"{self.T_gate_name}\", add_{self.T_gate_name}(), 0, 0, aliases={self.T_gate_aliases})\n"
-        return func
-
     def translate_p(self, line, translated_code_info):
         '''
         UC:
@@ -663,7 +652,7 @@ class STDGateTranslator:
         else:
             self.is_S_implemented = True
             
-            translated_code_info[translator_utils.KEY_NEW_MATRICES].append(self.add_S_gate())
+            translated_code_info[translator_utils.KEY_NEW_MATRICES][self.S_gate_name] = add_new_gate_matrix(self.S_gate_name, self.S_matrix, aliases=self.S_gate_aliases)
 
             translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
 
@@ -687,7 +676,7 @@ class STDGateTranslator:
         else:
             self.is_S_implemented = True
 
-            translated_code_info[translator_utils.KEY_NEW_MATRICES].append(self.add_S_gate())
+            translated_code_info[translator_utils.KEY_NEW_MATRICES][self.S_gate_name] = add_new_gate_matrix(self.S_gate_name, self.S_matrix, aliases=self.S_gate_aliases)
 
             translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
 
@@ -711,7 +700,7 @@ class STDGateTranslator:
         else:
             self.is_T_implemented = True
 
-            translated_code_info[translator_utils.KEY_NEW_MATRICES].append(self.add_T_gate())
+            translated_code_info[translator_utils.KEY_NEW_MATRICES][self.T_gate_name] = add_new_gate_matrix(self.T_gate_name, self.T_matrix, aliases=self.T_gate_aliases)
 
             translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
 
@@ -735,7 +724,7 @@ class STDGateTranslator:
         else:
             self.is_T_implemented = True
 
-            translated_code_info[translator_utils.KEY_NEW_MATRICES].append(self.add_T_gate())
+            translated_code_info[translator_utils.KEY_NEW_MATRICES][self.T_gate_name] = add_new_gate_matrix(self.T_gate_name, self.T_matrix, aliases=self.T_gate_aliases)
 
             translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
 
@@ -1064,23 +1053,14 @@ class GateOperationTranslator:
 
         return 1, line_index + 2
 
-    def pow_gate(self, exp, gate, translated_code_info):
-        if gate in translated_code_info[translator_utils.KEY_CUSTOM_GATES]:
-            raise NotImplementedError("The 'pow' function is not implemented yet for custom gates")
-        
-        gate_matrix = _gate_func[stdgates_open_to_qsimov[gate]]
-        return gate_matrix.pow(int(exp))
+    def pow_gate(self, exp, matrix):
+        return matrix.pow(int(exp))
     
-    def invert_gate(self, gate, translated_code_info):
-        if gate in translated_code_info[translator_utils.KEY_CUSTOM_GATES]:
-            raise NotImplementedError("The 'pow' function is not implemented yet for custom gates")
-        
-        gate_matrix = _gate_func[stdgates_open_to_qsimov[gate]]
+    def invert_gate(self, matrix):
+        matrix = matrix.transpose()
+        matrix = matrix.conjugate()
 
-        transpose = gate_matrix.transpose()
-        conjugate = transpose.conjugate()
-
-        return conjugate
+        return matrix
     
     def get_modifiers(self, line):
         mod_anti_controls = []
@@ -1232,6 +1212,7 @@ class GateOperationTranslator:
 
         # Get the gate's parameters, if it has
         gate_params, line_index = get_all_params(gate, line, line_index, translated_code_info)
+        amount_params = len(gate_params)
 
         # Get in order the qubits/bits used as controls or anticontrols
         mod_qu_bits, line_index = self.get_mod_qu_bits(line, line_index, translated_code_info)
@@ -1239,20 +1220,58 @@ class GateOperationTranslator:
         # Differentiate between q/c controls/anticontrols according to the order of the modifiers
         self.get_q_c_controls_anticontrols(mod_anti_controls, mod_qu_bits, q_controls, c_controls, q_anticontrols, c_anticontrols)
 
+
+        # Compute 'inv' and 'pow' modifiers
+        if mod_inv_pow:
+            if gate in translated_code_info[translator_utils.KEY_CUSTOM_GATES]:
+                raise NotImplementedError("The 'pow' and 'inv' modifiers are not implemented yet for custom gates")
+        
+            # Build a name for the new gate
+            mod_inv_pow_length = len(mod_inv_pow)
+            new_gate = ""
+            for i in range(mod_inv_pow_length):
+                mod, param = mod_inv_pow[i]
+                new_gate += f"{mod}{param}_"
+            new_gate += gate
+
+            if new_gate not in translated_code_info[translator_utils.KEY_NEW_MATRICES]:
+                # Compute the new gate matrix
+                matrix = _gate_func[stdgates_open_to_qsimov[gate]]()
+                for i in range(len(mod_inv_pow)):
+                    mod, param = mod_inv_pow[-i]
+
+                    if mod == "inv":
+                        matrix = self.invert_gate(matrix)
+                    
+                    else:
+                        matrix = self.pow_gate(param, matrix)
+
+                # Add new gate matrix to qsimov
+                translated_code_info[translator_utils.KEY_NEW_MATRICES][new_gate] = add_new_gate_matrix(new_gate, matrix, amount_params, amount_params)
+
+            gate = new_gate
+
         # Compute translation components
         if gate in stdgates_open_to_qsimov:
-            if len(gate_params) > 2:
-                t_gate = f"f\"{stdgates_open_to_qsimov[gate]}{gate_params}\""
+            if amount_params > 0:
+                t_gate = f"f\"{stdgates_open_to_qsimov[gate]}({list_to_string(gate_params)})\""
             
             else:
                 t_gate = f"f\"{stdgates_open_to_qsimov[gate]}\""
 
         elif gate in translated_code_info[translator_utils.KEY_CUSTOM_GATES]:
-            if len(gate_params) > 2:
-                t_gate = f"f{gate}{gate_params}"
+            if amount_params > 0:
+                t_gate = f"{gate}({list_to_string(gate_params)})"
         
             else:
-                t_gate = f"f{gate}()"
+                t_gate = f"{gate}()"
+
+        else:
+            if amount_params > 0:
+                t_gate = f"f\"{gate}\"({list_to_string(gate_params)})"
+            
+            else:
+                t_gate = f"f\"{gate}\""
 
         # Get the target qubits
         qubits = []
@@ -1265,6 +1284,7 @@ class GateOperationTranslator:
         targets -= set(c_anticontrols)
         targets = list(targets)
 
+        # In case we are calling a custom function, we need to rewrite the controls and anticontrols using their ids
         if TranslatorUtils.is_custom_def:
             q_controls, q_anticontrols, c_controls, c_anticontrols, targets = self.rewrite_anti_controls(q_controls, q_anticontrols, c_controls, c_anticontrols, targets)
 
@@ -1344,7 +1364,7 @@ class GateOperationTranslator:
         for qubit in qubits:
             t_qubits += qubit[0]
         
-        t_gate = f"{gate}{gate_params}"     if gate_params      else    f"{gate}()"
+        t_gate = f"{gate}({list_to_string(gate_params)})"     if gate_params      else    f"{gate}()"
 
         return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={t_qubits})"
 

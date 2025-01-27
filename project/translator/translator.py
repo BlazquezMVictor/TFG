@@ -23,7 +23,7 @@ class Translator:
             self.translator_utils.KEY_SUBROUTINES:          {},
             self.translator_utils.KEY_SUBROUTINE_PARAMS:    {},
             self.translator_utils.KEY_VARS_REF:             {},
-            self.translator_utils.KEY_NEW_MATRICES:         [],
+            self.translator_utils.KEY_NEW_MATRICES:         {},
             self.translator_utils.KEY_BIT_INITS:            []
         }
         self.translated_code = []
@@ -141,7 +141,7 @@ class Translator:
         translation = self.add_first_code_lines()
         translation += self.translated_code_info[self.translator_utils.KEY_BIT_INITS]
         translation += ["\n"]
-        translation += self.translated_code_info[self.translator_utils.KEY_NEW_MATRICES]
+        translation += self.translated_code_info[self.translator_utils.KEY_NEW_MATRICES].values()
         translation += [""]
         translation += self.translated_code
 
