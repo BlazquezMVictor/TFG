@@ -15,6 +15,8 @@ class Translator:
 
     def init_data_structures(self):
         self.translated_code_info = {
+            self.translator_utils.AMOUNT_QUBITS:           0,
+            self.translator_utils.AMOUNT_BITS:             0,
             self.translator_utils.KEY_QUBITS:               {},
             self.translator_utils.KEY_BITS:                 {},
             self.translator_utils.KEY_CUSTOM_GATES:         {},
@@ -33,6 +35,19 @@ class Translator:
             indent += tab
 
         return indent
+    
+    def add_first_code_lines(self):
+        qsimov_name = TranslatorUtils.qsimov_name
+        QCircuit_name = TranslatorUtils.QCircuit_name
+        amount_qubits = self.translated_code_info[self.translator_utils.AMOUNT_QUBITS]
+        amount_bits = self.translated_code_info[self.translator_utils.AMOUNT_BITS]
+
+        lines = f"import qsimov as {qsimov_name}\n"
+        lines += f"import numpy as np\n"
+        lines += f"from sympy.matrices import Matrix\n"
+        lines += f"\n{QCircuit_name} = {qsimov_name}.QCircuit({amount_qubits}, {amount_bits}, \"my_qsimov_circuit\")"
+
+        return [lines]
 
     def translate(self, parsed_code):
         custom_gate_init_indent = -1
@@ -123,4 +138,11 @@ class Translator:
                 # Add the translation to the custom gate
                 gate_translation += self.compute_indent(line[0]) + translation + "\n"
 
-        return self.translated_code
+        translation = self.add_first_code_lines()
+        translation += self.translated_code_info[self.translator_utils.KEY_BIT_INITS]
+        translation += ["\n"]
+        translation += self.translated_code_info[self.translator_utils.KEY_NEW_MATRICES]
+        translation += [""]
+        translation += self.translated_code
+
+        return translation

@@ -104,9 +104,6 @@ stdgates = '''
 qubit my_qubit;
 qubit[3] my_qubits;
 
-p(pi) my_qubit;
-p(pi) my_qubits;
-
 x my_qubit;
 x my_qubits;
 

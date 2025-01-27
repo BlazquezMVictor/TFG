@@ -296,6 +296,7 @@ class DataTypeTranslator:
         else:
             start_index = 0
 
+        translated_code_info[translator_utils.AMOUNT_QUBITS] += qubit_amount
         translated_code_info[translator_utils.KEY_QUBITS][var_id] = {"start_index": start_index, "size": qubit_amount}
         translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "qubit"}
 
@@ -331,6 +332,7 @@ class DataTypeTranslator:
 
         # Differenciate between global and local variable definitions
         if is_global:
+            translated_code_info[translator_utils.AMOUNT_BITS] += bit_amount
             translated_code_info[translator_utils.KEY_BITS][var_id] = {"start_index": start_index, "size": bit_amount}
             translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "bit"}
 
@@ -553,11 +555,17 @@ class STDGateTranslator:
         self.S_gate_aliases = ["s", "sqrtZ", "SqrtZ"]
         self.T_gate_aliases = ["t", "sqrtS", "SqrtS"]
 
-    def get_S_matrix(self):
-        return self.S_matrix
+    def add_S_gate(self):
+        func = f"def add_{self.S_gate_name}():\n"
+        func += f"\treturn {self.S_matrix}\n"
+        func += f"{TranslatorUtils.qsimov_name}.add_gate(\"{self.S_gate_name}\", add_{self.S_gate_name}(), 0, 0, aliases={self.S_gate_aliases})\n"
+        return func
     
-    def get_T_matrix(self):
-        return self.T_matrix
+    def add_T_gate(self):
+        func = f"def add_{self.T_gate_name}():\n"
+        func += f"\treturn {self.T_matrix}\n"
+        func += f"{TranslatorUtils.qsimov_name}.add_gate(\"{self.T_gate_name}\", add_{self.T_gate_name}(), 0, 0, aliases={self.T_gate_aliases})\n"
+        return func
 
     def translate_p(self, line, translated_code_info):
         '''
@@ -655,9 +663,9 @@ class STDGateTranslator:
         else:
             self.is_S_implemented = True
             
-            translation =   f"{TranslatorUtils.qsimov_name}.add_gate({t_gate}, {self.get_S_matrix}, 0, 0, aliases={self.S_gate_aliases})"
-            translation += "\n"
-            translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+            translated_code_info[translator_utils.KEY_NEW_MATRICES].append(self.add_S_gate())
+
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
 
             return translation
             
@@ -679,9 +687,9 @@ class STDGateTranslator:
         else:
             self.is_S_implemented = True
 
-            translation =   f"{TranslatorUtils.qsimov_name}.add_gate(f\"{self.S_gate_name}\", {self.get_S_matrix}, 0, 0, aliases={self.S_gate_aliases})"
-            translation += "\n"
-            translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+            translated_code_info[translator_utils.KEY_NEW_MATRICES].append(self.add_S_gate())
+
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
 
             return translation
 
@@ -703,9 +711,9 @@ class STDGateTranslator:
         else:
             self.is_T_implemented = True
 
-            translation =   f"{TranslatorUtils.qsimov_name}.add_gate({t_gate}, {self.get_T_matrix}, 0, 0, aliases={self.T_gate_aliases})"
-            translation += "\n"
-            translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+            translated_code_info[translator_utils.KEY_NEW_MATRICES].append(self.add_T_gate())
+
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
 
             return translation
 
@@ -727,9 +735,9 @@ class STDGateTranslator:
         else:
             self.is_T_implemented = True
 
-            translation =   f"{TranslatorUtils.qsimov_name}.add_gate(f\"{self.T_gate_name}\", {self.get_T_matrix}, 0, 0, aliases={self.T_gate_aliases})"
-            translation += "\n"
-            translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+            translated_code_info[translator_utils.KEY_NEW_MATRICES].append(self.add_T_gate())
+
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
 
             return translation
 

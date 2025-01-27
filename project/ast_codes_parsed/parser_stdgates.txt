@@ -1,4 +1,8 @@
 program
+  version
+    OPENQASM
+    3.0
+    ;
   statementOrScope
     statement
       includeStatement
@@ -23,34 +27,6 @@ program
               3
             ]
         my_qubits
-        ;
-  statementOrScope
-    statement
-      gateCallStatement
-        p
-        (
-        expressionList
-          expression
-            pi
-        )
-        gateOperandList
-          gateOperand
-            indexedIdentifier
-              my_qubit
-        ;
-  statementOrScope
-    statement
-      gateCallStatement
-        p
-        (
-        expressionList
-          expression
-            pi
-        )
-        gateOperandList
-          gateOperand
-            indexedIdentifier
-              my_qubits
         ;
   statementOrScope
     statement

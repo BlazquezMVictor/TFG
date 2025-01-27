@@ -17,10 +17,10 @@ os.system("cls")
 # Mirar el final de los tipos de la documentacion ("Register concatenation and slicing", "Classical value bit slicing", "Array concatenation and slicing")
 
 parsed_codes_folder = "ast_codes_parsed"
-filename = "parser_code.txt"
+# filename = "parser_code.txt"
 # filename = "parser_data_types.txt"
 # filename = "parser_complex.txt"
-# filename = "parser_stdgates.txt"
+filename = "parser_stdgates.txt"
 # filename = "parser_gate_ops.txt"
 # filename = "parser_modifiers.txt"
 # filename = "parser_custom_gates.txt"
@@ -243,8 +243,7 @@ def remove_scope_brackets(code):
 if __name__ == "__main__":
     translate = True
     # translate = False
-    debug = True
-    # debug = False
+
     with open(MAIN_PARENT_PATH + "/" + parsed_codes_folder + "/" + filename, "r") as file:
         txt = file.read()
 
@@ -257,19 +256,11 @@ if __name__ == "__main__":
         remove_scope_brackets(result)
 
         if not translate:
-            if debug:
-                for line in result:
-                    print(f"L: {line}")
-            else:
-                for line in result:
-                    print(line)
+            for line in result:
+                print(line)
                     
         else:
             translated_code = translator.translate(result)
 
-            if debug:
-                for line in translated_code:
-                    print(f"L: {line}")
-            else:
-                for line in translated_code:
-                    print(line)
+            for line in translated_code:
+                print(line)

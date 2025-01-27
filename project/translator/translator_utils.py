@@ -13,14 +13,16 @@ class TranslatorUtils:
         self.QCircuit_name = "qc"
         self.QGate_name = "custom_gate"
 
-        self.KEY_QUBITS = 0
-        self.KEY_BITS = 1
-        self.KEY_CUSTOM_GATES = 2
-        self.KEY_SUBROUTINES = 3
-        self.KEY_SUBROUTINE_PARAMS = 4
-        self.KEY_VARS_REF = 5,
-        self.KEY_NEW_MATRICES = 6,
-        self.KEY_BIT_INITS = 7,
+        self.AMOUNT_QUBITS = 0
+        self.AMOUNT_BITS = 1
+        self.KEY_QUBITS = 2
+        self.KEY_BITS = 3
+        self.KEY_CUSTOM_GATES = 4
+        self.KEY_SUBROUTINES = 5
+        self.KEY_SUBROUTINE_PARAMS = 6
+        self.KEY_VARS_REF = 7
+        self.KEY_NEW_MATRICES = 8
+        self.KEY_BIT_INITS = 9
 
         self.special_chars = {"(", ")", "[", "]", "{", "}", "="}
         self.math_logic_operators = {
