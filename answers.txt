@@ -136,3 +136,47 @@ NOTAS
 		- Luego usar circuitos mas grandes con conjuntos de puertas
 
 	- Mirar si pennylein de sanadu soporta openQASM3.0
+
+- Para la memoria con scrum
+	- Mencionar que he usado una adaptacion
+	- Tengo una pila de producto, una lista de tareasa
+		- Ordenarla segun importancia
+	- Cada tarea la he hecho en tal sprint
+		- Los sprints son de un tamaño fijo
+		- Si algo no finaliza en un srpint se pasa al siguiente
+		- Si has terminado todo antes del plazo, planificarlo mejor la proxima
+	- Hay varias reuniones
+		- Sprint planning
+			- Planeo de lo que se hace en el sprint
+			- Coger por orden de importancia pero no obligatorio, podemos coger 1, 2 y 4
+		- Sprint review
+			- Revision de los avances por todos los interesados
+		- Restrospective
+			- Para ver como ha funcionado esta metodologia
+		- Daily scrum
+			- Equipo y scrum master se reunen para contar cada uno un poco de como va
+			- 10 min antes de trabajar
+		- Scrum refinement o algo asi
+			- Con el product owner con desarrolladores
+			- Product owner dice estas tareas son las que mas importancia tiene y desarrolladores dice tiempo
+			- Si hay una tarea muy larga se divide en mas sencillas
+
+
+	- Hernan dice que usar sprints de dos semanas
+
+	- Hacer documentacion o testing no es un item de la pila
+	- Se considera que un item esta compleatado si cumple la definicion de hecho
+		- La definicion puede ser que el item se haya testeado tanto y se haya documentado tanto
+
+	- Pila producto esta ordenada de mayor a menor importancia
+		- En el sprint planning se decide cuantas de esa tareas se cogen en funcion del tiempo y complejidad
+
+	- Se pueden añadir cosas que nos han pasado
+		- En review
+		- Hemos descurbierto que hay esta nueva funcionalidad asi que se ha añadido a la pila
+
+	- La pila de sprint son tareas de la pila de producto
+		- Las terminadas bien
+		- Las no acabadas se devuelven a la pila de producto
+
+	- Buscar la rubrica para evaluar el TFG
