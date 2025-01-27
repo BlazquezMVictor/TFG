@@ -116,9 +116,11 @@ class Translator:
                 translation = getattr(self.gate_op_translator, method)(line[1], self.translated_code_info)  # This time we maintain the keyword
 
             # Check variable operation
-            elif keyword in self.translated_code_info[self.translator_utils.KEY_VARS_REF] or keyword in self.translated_code_info[self.translator_utils.KEY_SUBROUTINE_PARAMS]:
-                translation = self.classic_inst_translator.translate_var_operation(line[1], self.translated_code_info)
-
+            elif keyword in self.translated_code_info[self.translator_utils.KEY_VARS_REF]:
+                translation = self.classic_inst_translator.translate_var_operation(line[1], self.translator_utils.KEY_VARS_REF, self.translated_code_info)
+            elif keyword in self.translated_code_info[self.translator_utils.KEY_SUBROUTINE_PARAMS]:
+                translation = self.classic_inst_translator.translate_var_operation(line[1], self.translator_utils.KEY_SUBROUTINE_PARAMS, self.translated_code_info)
+                
             # Check if we are calling a custom function
             elif keyword in self.translated_code_info[self.translator_utils.KEY_SUBROUTINES]:
                 translation = self.classic_inst_translator.translate_custom_def(line[1], self.translated_code_info)

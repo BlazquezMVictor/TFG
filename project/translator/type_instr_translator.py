@@ -57,12 +57,12 @@ custom_gate_qargs = {}
     # bit c;
     # c = measure q;
     # qubit[5 + c] q2;
+    # No se le da soporte a este caso
 # Otro problema es que si es una expresion numerica pero compleja (5 + int(3.5) * var_1), tengo que ejecutarla y conseguir el valor
 # TODO:
 # Implementar solucion para 'let my_var = q[{0,3,5}]'
 # TODO:
-# Mirar que no se añadan la inversa de puertas que qsimov ya tiene
-    # No tiene sentido añadir la inversa de 'X' cuando podemos usar 'X-1'
+# Dar soporte a las operaciones NOT, OR, AND, y demas sobre bits clasicos
 
 def get_close_bracket_index(line, start_index):
     bracket_level = 0
@@ -145,6 +145,9 @@ def get_expression(line, translated_code_info, is_array=False):
 
             jumps = close_bracket_i - i
 
+        elif item in translated_code_info[translator_utils.KEY_BITS]:
+            raise NotImplementedError("There is no support yet to 'bit' variable access during execution of circuit")
+
         elif item in translator_utils.math_logic_operators:
             item = translator_utils.math_logic_operators[item]
             item = " " + item + " "
@@ -205,6 +208,7 @@ def get_param(line, line_index, translated_code_info, is_custom_gate=False, is_c
             
             else:
                 return "{" + get_expression(param, translated_code_info) + "}", i + 1     # +1 because of the ')' or ','
+            
         param.append(item)
 
 def get_qu_bit(line, line_index):
@@ -367,13 +371,18 @@ class DataTypeTranslator:
         
         var_id = line[eq_symbol_index - 1]
         init_value = ""
+        t_init_value = ""
 
         if eq_symbol_index != 0:
-            init_value = f" = {get_expression(line[eq_symbol_index + 1:], translated_code_info)}"
+            init_value = get_expression(line[eq_symbol_index + 1:], translated_code_info)
+            t_init_value = f" = {init_value}"
 
-        translation = f"{var_id}: int{init_value}"
+        translation = f"{var_id}: int{t_init_value}"
 
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "int"}
+        if init_value:      value = eval(init_value)
+        else:               value = 0
+
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "int", "value": value}
 
         return translation
 
@@ -395,13 +404,18 @@ class DataTypeTranslator:
         
         var_id = line[eq_symbol_index - 1]
         init_value = ""
+        t_init_value = ""
 
         if eq_symbol_index != 0:
-            init_value = f" = {get_expression(line[eq_symbol_index + 1:], translated_code_info)}"
+            init_value = get_expression(line[eq_symbol_index + 1:], translated_code_info)
+            t_init_value = f" = {init_value}"
 
-        translation = f"{var_id}: float{init_value}"
+        translation = f"{var_id}: float{t_init_value}"
 
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "float"}
+        if init_value:      value = eval(init_value)
+        else:               value = 0
+
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "float", "value": value}
 
         return translation
 
@@ -418,13 +432,18 @@ class DataTypeTranslator:
         
         var_id = line[eq_symbol_index - 1]
         init_value = ""
+        t_init_value = ""
 
         if eq_symbol_index != 0:
-            init_value = f" = {get_expression(line[eq_symbol_index + 1:], translated_code_info)}"
+            init_value = get_expression(line[eq_symbol_index + 1:], translated_code_info)
+            t_init_value = f" = {init_value}"
 
-        translation = f"{var_id}: complex{init_value}"
+        translation = f"{var_id}: complex{t_init_value}"
 
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "complex"}
+        if init_value:      value = eval(init_value)
+        else:               value = 0
+
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "complex", "value": value}
 
         return translation
 
@@ -440,13 +459,18 @@ class DataTypeTranslator:
         
         var_id = line[eq_symbol_index - 1]
         init_value = ""
+        t_init_value = ""
 
         if eq_symbol_index != 0:
-            init_value = f" = {get_expression(line[eq_symbol_index + 1:], translated_code_info)}"
+            init_value = get_expression(line[eq_symbol_index + 1:], translated_code_info)
+            t_init_value = f" = {init_value}"
 
-        translation = f"{var_id}: bool{init_value}"
+        translation = f"{var_id}: bool{t_init_value}"
 
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "bool"}
+        if init_value:      value = eval(init_value)
+        else:               value = 0
+
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "bool", "value": value}
 
         return translation
 
@@ -462,13 +486,18 @@ class DataTypeTranslator:
         var_type = line[0]
         var_id = line[eq_symbol_index - 1].upper()
         init_value = ""
+        t_init_value = ""
 
         if eq_symbol_index != 0:
-            init_value = f" = {get_expression(line[eq_symbol_index + 1:], translated_code_info)}"
+            init_value = get_expression(line[eq_symbol_index + 1:], translated_code_info)
+            t_init_value = f" = {init_value}"
 
-        translation = f"{var_id}: {var_type}{init_value}"
+        translation = f"{var_id}: {var_type}{t_init_value}"
 
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": var_type}
+        if init_value:      value = eval(init_value)
+        else:               value = 0
+
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": var_type, "value": value}
 
         return translation
 
@@ -493,14 +522,19 @@ class DataTypeTranslator:
         eq_symbol_index = self.get_eq_symbol_index(line)
         
         var_id = line[eq_symbol_index - 1]
-        init_value = f" = []"
+        init_value = []
+        t_init_value = f" = []"
 
         if eq_symbol_index != 0:
-            init_value = f" = np.array({get_expression(line[eq_symbol_index + 1:], translated_code_info, is_array=True)})"
+            init_value = f"np.array({get_expression(line[eq_symbol_index + 1:], translated_code_info, is_array=True)})"
+            t_init_value = f" = {init_value}"
 
-        translation = f"{var_id}: list{init_value}"
+        translation = f"{var_id}: list{t_init_value}"
 
-        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "array"}
+        if init_value:      value = eval(init_value)
+        else:               value = 0
+
+        translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "array", "value": value}
 
         return translation
 
@@ -1040,21 +1074,21 @@ class GateOperationTranslator:
     def __init__(self):
         pass
 
-    def get_mod_param(self, line, line_index):
-        param = ""
+    def get_mod_param(self, line, line_index, translated_code_info):
+        param = []
         read = False
 
         for i in range(line_index, len(line)):
             item = line[i]
             if item == "@":     break
-            if item == ")":     return int(param), i + 2     # +1 because of the ')' and the '@'
-            if read:            param += item
+            if item == ")":     return get_expression(param, translated_code_info), i + 2     # +1 because of the ')' and the '@'
+            if read:            param.append(item)
             if item == "(":     read = True
 
-        return 1, line_index + 2
+        return "1", line_index + 2
 
     def pow_gate(self, exp, matrix):
-        return matrix.pow(int(exp))
+        return matrix.pow(exp)
     
     def invert_gate(self, matrix):
         matrix = matrix.transpose()
@@ -1062,20 +1096,20 @@ class GateOperationTranslator:
 
         return matrix
     
-    def get_modifiers(self, line):
+    def get_modifiers(self, line, translated_code_info):
         mod_anti_controls = []
         mod_inv_pow = []
 
         line_index = 0
         mod = line[0]
         while mod in translator_utils.gate_operations:
-            param, line_index = self.get_mod_param(line, line_index)
+            param, line_index = self.get_mod_param(line, line_index, translated_code_info)
 
             if mod == "ctrl" or mod == "negctrl":
-                mod_anti_controls.append((mod, param))
+                mod_anti_controls.append((mod, eval(param)))
 
             else:
-                mod_inv_pow.append((mod, param))
+                mod_inv_pow.append((mod, eval(param)))
 
             mod = line[line_index]
 
@@ -1190,81 +1224,74 @@ class GateOperationTranslator:
 
         return rewritten_q_controls, rewritten_q_anticontrols, rewritten_c_controls, rewritten_c_anticontrols, rewritten_targets
         
-    def translate_mod(self, line, translated_code_info):
-        '''
-        UCs:
-        
-        ctrl @ negctrl @ inv @ pow(2) @ x controls[0], controls[1], target;
-        ctrl(2) @ negctrl(2) @ inv @ pow(2) @ x controls[0], controls[1], controls[2], controls[3], target;
-        ctrl @ negctrl @ ctrl @ inv @ pow(2) @ x controls[0], controls[1], controls[2], target;
-        '''
+    def build_new_gate(self, gate, mod_inv_pow, mod_inv_pow_length, amount_params, translated_code_info):
+        if gate in translated_code_info[translator_utils.KEY_CUSTOM_GATES]:
+            raise NotImplementedError("Custom gates cannot be used yet when more than two modifiers are applied to the gate")
+    
+        # Build a name for the new gate
+        new_gate = ""
+        for i in range(mod_inv_pow_length):
+            mod, param = mod_inv_pow[i]
+            if mod == "inv":    new_gate += f"{mod}_"
+            else:               new_gate += f"{mod}({param})_"
+        new_gate += gate
 
-        mod_inv_pow = []
-        mod_anti_controls = []
-        mod_qu_bits = []
-        q_controls = []
-        q_anticontrols = []
-        c_controls = []
-        c_anticontrols = []
-
-        # Get in order the modifiers and put them in its corresponding list
-        mod_anti_controls, mod_inv_pow, gate, line_index = self.get_modifiers(line)
-
-        # Get the gate's parameters, if it has
-        gate_params, line_index = get_all_params(gate, line, line_index, translated_code_info)
-        amount_params = len(gate_params)
-
-        # Get in order the qubits/bits used as controls or anticontrols
-        mod_qu_bits, line_index = self.get_mod_qu_bits(line, line_index, translated_code_info)
-
-        # Differentiate between q/c controls/anticontrols according to the order of the modifiers
-        self.get_q_c_controls_anticontrols(mod_anti_controls, mod_qu_bits, q_controls, c_controls, q_anticontrols, c_anticontrols)
-
-
-        # Compute 'inv' and 'pow' modifiers
-        if mod_inv_pow:
-            if gate in translated_code_info[translator_utils.KEY_CUSTOM_GATES]:
-                raise NotImplementedError("The 'pow' and 'inv' modifiers are not implemented yet for custom gates")
-        
-            # Build a name for the new gate
-            mod_inv_pow_length = len(mod_inv_pow)
-            new_gate = ""
+        if new_gate not in translated_code_info[translator_utils.KEY_NEW_MATRICES]:
+            # Compute the new gate matrix
+            matrix = _gate_func[stdgates_open_to_qsimov[gate]]()
             for i in range(mod_inv_pow_length):
-                mod, param = mod_inv_pow[i]
-                new_gate += f"{mod}{param}_"
-            new_gate += gate
+                mod, param = mod_inv_pow[-i]
 
-            if new_gate not in translated_code_info[translator_utils.KEY_NEW_MATRICES]:
-                # Compute the new gate matrix
-                matrix = _gate_func[stdgates_open_to_qsimov[gate]]()
-                for i in range(len(mod_inv_pow)):
-                    mod, param = mod_inv_pow[-i]
+                if mod == "inv":
+                    matrix = self.invert_gate(matrix)
+                
+                else:
+                    matrix = self.pow_gate(param, matrix)
 
-                    if mod == "inv":
-                        matrix = self.invert_gate(matrix)
-                    
-                    else:
-                        matrix = self.pow_gate(param, matrix)
+            # Add new gate matrix to qsimov
+            translated_code_info[translator_utils.KEY_NEW_MATRICES][new_gate] = add_new_gate_matrix(new_gate, matrix, amount_params, amount_params)
 
-                # Add new gate matrix to qsimov
-                translated_code_info[translator_utils.KEY_NEW_MATRICES][new_gate] = add_new_gate_matrix(new_gate, matrix, amount_params, amount_params)
+        return new_gate
+        
+    def compute_inv_pow(self, mod_inv_pow, gate, amount_params, translated_code_info):
+        mod_inv_pow_length = len(mod_inv_pow)
+        is_inv = False
+        power = 1
 
-            gate = new_gate
+        if mod_inv_pow_length > 1:
+            gate = self.build_new_gate(gate, mod_inv_pow, mod_inv_pow_length, amount_params, translated_code_info)
 
-        # Compute translation components
+        elif mod_inv_pow_length == 1:
+            mod, param = mod_inv_pow[0]
+
+            if mod == "inv":    
+                is_inv = True
+            else:
+                if isinstance(param, int):
+                    power = param
+                else:
+                    gate = self.build_new_gate(gate, mod_inv_pow, mod_inv_pow_length, amount_params, translated_code_info)
+
+        return gate, is_inv, power
+
+    def get_t_gate(self, gate, gate_params, is_inv, amount_params, translated_code_info):
         if gate in stdgates_open_to_qsimov:
             if amount_params > 0:
-                t_gate = f"f\"{stdgates_open_to_qsimov[gate]}({list_to_string(gate_params)})\""
+                if is_inv:      t_gate = f"f\"{stdgates_open_to_qsimov[gate]}({list_to_string(gate_params)})-1\""
+                else:           t_gate = f"f\"{stdgates_open_to_qsimov[gate]}({list_to_string(gate_params)})\""
             
             else:
-                t_gate = f"f\"{stdgates_open_to_qsimov[gate]}\""
+                if is_inv:      t_gate = f"f\"{stdgates_open_to_qsimov[gate]}-1\""
+                else:           t_gate = f"f\"{stdgates_open_to_qsimov[gate]}\""
 
         elif gate in translated_code_info[translator_utils.KEY_CUSTOM_GATES]:
             if amount_params > 0:
-                t_gate = f"{gate}({list_to_string(gate_params)})"
+                if is_inv:      t_gate = f"{gate}({list_to_string(gate_params)}).invert()"
+                else:           t_gate = f"{gate}({list_to_string(gate_params)})"
         
             else:
-                t_gate = f"{gate}()"
+                if is_inv:      t_gate = f"{gate}().invert()"
+                else:           t_gate = f"{gate}()"
 
         else:
             if amount_params > 0:
@@ -1273,7 +1300,9 @@ class GateOperationTranslator:
             else:
                 t_gate = f"f\"{gate}\""
 
-        # Get the target qubits
+        return t_gate
+
+    def get_t_targets_controls(self, mod_qu_bits, q_controls, q_anticontrols, c_controls, c_anticontrols):
         qubits = []
         for qubit in mod_qu_bits:
             qubits += qubit[0]
@@ -1294,10 +1323,52 @@ class GateOperationTranslator:
         t_c_controls = f", c_controls={c_controls}"                     if c_controls       else ""
         t_c_anticontrols = f", c_anticontrols={c_anticontrols}"         if c_anticontrols   else ""
 
-        # Build the translation
-        translation =  f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, {t_targets}{t_controls}{t_anticontrols}{t_c_controls}{t_c_anticontrols})"
+        return t_targets, t_controls, t_anticontrols, t_c_controls, t_c_anticontrols
 
-        return translation
+    def translate_mod(self, line, translated_code_info):
+        '''
+        UCs:
+        
+        ctrl @ negctrl @ inv @ pow(2) @ x controls[0], controls[1], target;
+        ctrl(2) @ negctrl(2) @ inv @ pow(2) @ x controls[0], controls[1], controls[2], controls[3], target;
+        ctrl @ negctrl @ ctrl @ inv @ pow(2) @ x controls[0], controls[1], controls[2], target;
+        '''
+
+        mod_inv_pow = []
+        mod_anti_controls = []
+        mod_qu_bits = []
+        q_controls = []
+        q_anticontrols = []
+        c_controls = []
+        c_anticontrols = []
+
+        # Get in order the modifiers and put them in its corresponding list
+        mod_anti_controls, mod_inv_pow, gate, line_index = self.get_modifiers(line, translated_code_info)
+
+        # Get the gate's parameters, if it has
+        gate_params, line_index = get_all_params(gate, line, line_index, translated_code_info)
+        amount_params = len(gate_params)
+
+        # Get in order the qubits/bits used as controls or anticontrols
+        mod_qu_bits, line_index = self.get_mod_qu_bits(line, line_index, translated_code_info)
+
+        # Differentiate between q/c controls/anticontrols according to the order of the modifiers
+        self.get_q_c_controls_anticontrols(mod_anti_controls, mod_qu_bits, q_controls, c_controls, q_anticontrols, c_anticontrols)
+
+        # Compute 'inv' and 'pow' modifiers
+        gate, is_inv, power = self.compute_inv_pow(mod_inv_pow, gate, amount_params, translated_code_info)
+
+        # Compute translation components
+        t_gate = self.get_t_gate(gate, gate_params, is_inv, amount_params, translated_code_info)
+        t_targets, t_controls, t_anticontrols, t_c_controls, t_c_anticontrols = self.get_t_targets_controls(mod_qu_bits, q_controls, q_anticontrols, c_controls, c_anticontrols)
+
+        # Build the translation
+        translation = ""
+
+        for i in range(power):
+            translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, {t_targets}{t_controls}{t_anticontrols}{t_c_controls}{t_c_anticontrols})\n"
+
+        return translation[:-1]
 
     def translate_gate(self, line, translated_code_info):
         '''
@@ -1491,7 +1562,14 @@ def rotr(array, distance):
         
         return var_ids, types
 
-    def translate_var_operation(self, line, translated_code_info):
+    def translate_var_operation(self, line, key, translated_code_info):
+        var_id = line[0]
+
+        if translated_code_info[key]["type"] == "bit":
+            if line[1] == "[":      index = line[2]
+            else:                   index = -1
+
+            
         return get_expression(line, translated_code_info)
     
     def translate_rotl(self, line, translated_code_info):
