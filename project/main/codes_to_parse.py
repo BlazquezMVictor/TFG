@@ -230,6 +230,27 @@ ctrl @ negctrl @ ctrl @ inv @ pow(2) @ x controls[0], controls[1], controls[2], 
 ctrl @ negctrl(2) @ negctrl @ ctrl(2) @ x measurement, measurements[0], measurements[1], target, controls[0], controls[1], targets[0];
 '''
 
+inv_pow_modifiers = '''
+qubit target;
+qubit control;
+bit measurement;
+bit[4] measurements;
+
+gate my_gate_2 t1, {
+    z t1;
+}
+
+inv @ x target;
+pow(2) @ sx target;
+pow(2.5) @ x target;
+
+inv @ my_gate_2 target;
+pow(2) @ my_gate_2 target;
+
+ctrl @ inv @ pow(2) @ x control, target;
+ctrl @ inv @ pow(2.5) @ x control, target;
+'''
+
 custom_gates = '''
 qubit target;
 qubit[4] targets;
