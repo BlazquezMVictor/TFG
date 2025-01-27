@@ -4,13 +4,4 @@ Sobre la puerta P
 	- A poder ser a ver si encuentro su matriz
 	- Paulet parece que tampoco la ha utilizado
 
-Tiene sentido meter bits clasicos dada esta situacion
-	- def parity(bit[n] cin) -> bit {
-		bit c;
-		for int i in [0: n - 1] {
-			c ^= cin[i];
-		}
-		return c;
-	}
-
-Hablar sobre como voy a trabajar con los qubits y los bits en las funciones custom
+Importa el orden cuando hago potencia de puerta y despues inversa?
