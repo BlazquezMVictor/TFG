@@ -58,6 +58,9 @@ class TranslatorUtils:
             '~': '-',
             '&&': 'and',
             '||': 'or',
+
+            'true': 'True',
+            'false': 'False'
         }
         self.comments = {
             "//": "#",

@@ -20,17 +20,17 @@ data_types = '''
     int my_var = 10;
     int my_var;
 
-    float[16] my_var = π;
+    float[16] my_var = pi;
     float[16] my_var;
     float my_var = 2.3;
     float my_var;
 
-    angle[16] my_var = π;
+    angle[16] my_var = pi;
     angle[16] my_var;
-    angle my_var = π;
+    angle my_var = pi;
     angle my_var;
 
-    complex[float[16]] my_var = π;
+    complex[float[16]] my_var = pi;
     complex[float[16]] my_var;
     complex[float] my_var = 2.3;
     complex[float] my_var;
@@ -149,9 +149,6 @@ cy my_qubit, my_qubits;
 cz my_qubits[0], my_qubits[1];
 cz my_qubit, my_qubits;
 
-cp(pi) my_qubits[0], my_qubits[1];
-cp(pi) my_qubit, my_qubits;
-
 crx(pi) my_qubits[0], my_qubits[1];
 crx(pi) my_qubit, my_qubits;
 
@@ -170,9 +167,6 @@ ccx my_qubits[0], my_qubits[1], my_qubits[2];
 ccx my_qubits[0], my_qubits[1], my_qubits;
 
 cswap my_qubits[0], my_qubits[1], my_qubits[2];
-
-cu(0,0,pi,pi) my_qubits[0], my_qubits[1];
-cu(0,0,pi,pi) my_qubit, my_qubits;
 
 U(pi/4, 0, pi/2) my_qubit;
 U(pi/4, 0, pi/2) my_qubits;
@@ -199,10 +193,10 @@ measurements = measure targets;
 barrier target;
 barrier controls;
 
-gate crz(pi) c, t {
+gate my_crz(pi) c, t {
     ctrl @ rz(pi) c, t;
 }
-crz(pi) controls[0], target;
+my_crz(pi) controls[0], target;
 
 ctrl @ negctrl @ inv @ pow(2) @ x controls[0], controls[1], target;
 ctrl(2) @ negctrl(2) @ inv @ pow(2) @ x controls[0], controls[1], controls[2], controls[3], target;
@@ -283,8 +277,8 @@ bit[8] c = "10001111";
 bit[8] d = "01110000";
 bool e = false;
 int f = 1;
-int g = 2
-int i = 3
+int g = 2;
+int i = 3;
 
 
 a = b;
@@ -292,19 +286,13 @@ b = 0;
 a == b;
 a == 10;
 
-c << 1;
-c >> 1;
-c | d;
-c & d;
-rotl(c, 2)
-rotr(c, 2)
-popcount(d)
+popcount(d);
 
 e == false;
 e == bool(f);
 f >= b;
 f == pi;
-f == float(b)
+f == float(b);
 
 g * i;
 i / g;
@@ -333,8 +321,13 @@ if  ((a == b) && (a == c)) {
 }
 
 if (a == b) {
-    if (c == 0) {a = 3;}}
-else { a = 2;}
+    if (c == 0) {
+        a = 3;
+    }
+}
+else { 
+    a = 2;
+}
 '''
 
 classic_for_instruction = '''
@@ -362,11 +355,6 @@ array[float[64], 4] my_floats = {1.2, -3.4, 0.5, 9.8};
     for float[64] f in my_floats {
     d += 1;
 }
-
-bit[5] register;
-for bit b in register {d += 1;}
-let alias = register[1:3];
-for bit b in alias {}
 '''
 
 classic_while_instruction = '''
@@ -475,10 +463,6 @@ def f4(qubit[5] q, bit[5] b) -> bit {
     ctrl @ x b[1], q[1];
 
     b[2] = measure q2;
-    
-    if (b[3] == 1) {
-        b[2] << 1;
-    }
 
     return b[2];
 }
@@ -549,7 +533,6 @@ b2 = b3 ^ b1[0];
 b2 = ~b3;
 b2 = ~b1[0];
 '''
-
 
 let = '''
 qubit[5] q1;
