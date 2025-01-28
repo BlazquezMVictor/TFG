@@ -1,7 +1,7 @@
 program
   version
     OPENQASM
-    3.0
+    3
     ;
   statementOrScope
     statement
@@ -385,52 +385,6 @@ program
   statementOrScope
     statement
       gateCallStatement
-        cp
-        (
-        expressionList
-          expression
-            pi
-        )
-        gateOperandList
-          gateOperand
-            indexedIdentifier
-              my_qubits
-              indexOperator
-                [
-                expression
-                  0
-                ]
-          ,
-          gateOperand
-            indexedIdentifier
-              my_qubits
-              indexOperator
-                [
-                expression
-                  1
-                ]
-        ;
-  statementOrScope
-    statement
-      gateCallStatement
-        cp
-        (
-        expressionList
-          expression
-            pi
-        )
-        gateOperandList
-          gateOperand
-            indexedIdentifier
-              my_qubit
-          ,
-          gateOperand
-            indexedIdentifier
-              my_qubits
-        ;
-  statementOrScope
-    statement
-      gateCallStatement
         crx
         (
         expressionList
@@ -715,70 +669,6 @@ program
                 expression
                   2
                 ]
-        ;
-  statementOrScope
-    statement
-      gateCallStatement
-        cu
-        (
-        expressionList
-          expression
-            0
-          ,
-          expression
-            0
-          ,
-          expression
-            pi
-          ,
-          expression
-            pi
-        )
-        gateOperandList
-          gateOperand
-            indexedIdentifier
-              my_qubits
-              indexOperator
-                [
-                expression
-                  0
-                ]
-          ,
-          gateOperand
-            indexedIdentifier
-              my_qubits
-              indexOperator
-                [
-                expression
-                  1
-                ]
-        ;
-  statementOrScope
-    statement
-      gateCallStatement
-        cu
-        (
-        expressionList
-          expression
-            0
-          ,
-          expression
-            0
-          ,
-          expression
-            pi
-          ,
-          expression
-            pi
-        )
-        gateOperandList
-          gateOperand
-            indexedIdentifier
-              my_qubit
-          ,
-          gateOperand
-            indexedIdentifier
-              my_qubits
         ;
   statementOrScope
     statement

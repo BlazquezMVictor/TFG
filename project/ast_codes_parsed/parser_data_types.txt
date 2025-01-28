@@ -180,7 +180,7 @@ program
         =
         declarationExpression
           expression
-            π
+            pi
         ;
   statementOrScope
     statement
@@ -226,7 +226,7 @@ program
         =
         declarationExpression
           expression
-            π
+            pi
         ;
   statementOrScope
     statement
@@ -249,7 +249,7 @@ program
         =
         declarationExpression
           expression
-            π
+            pi
         ;
   statementOrScope
     statement
@@ -276,7 +276,7 @@ program
         =
         declarationExpression
           expression
-            π
+            pi
         ;
   statementOrScope
     statement

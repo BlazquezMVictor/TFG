@@ -1,7 +1,7 @@
 program
   version
     OPENQASM
-    3.0
+    3
     ;
   statementOrScope
     statement
@@ -283,44 +283,6 @@ program
                     indexedIdentifier
                       q2
                 ;
-          statementOrScope
-            statement
-              ifStatement
-                if
-                (
-                expression
-                  expression
-                    expression
-                      b
-                    indexOperator
-                      [
-                      expression
-                        3
-                      ]
-                  ==
-                  expression
-                    1
-                )
-                statementOrScope
-                  scope
-                    {
-                    statementOrScope
-                      statement
-                        expressionStatement
-                          expression
-                            expression
-                              expression
-                                b
-                              indexOperator
-                                [
-                                expression
-                                  2
-                                ]
-                            <<
-                            expression
-                              1
-                          ;
-                    }
           statementOrScope
             statement
               returnStatement
