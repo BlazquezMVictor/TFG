@@ -538,3 +538,15 @@ if (mid[0]) {
 out = measure q;
 '''
 
+bit_ops = '''
+bit[5] b1;
+bit b2;
+bit b3;
+
+b2 = b3 | b1[0];
+b2 = b3 & b1[0];
+b2 = b3 ^ b1[0];
+b2 = ~b3;
+b2 = ~b1[0];
+'''
+
