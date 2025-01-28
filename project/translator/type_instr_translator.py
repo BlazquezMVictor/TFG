@@ -57,8 +57,6 @@ custom_gate_qargs = {}
     # qubit[5 + c] q2;
     # No se le da soporte a este caso
 # Otro problema es que si es una expresion numerica pero compleja (5 + int(3.5) * var_1), tengo que ejecutarla y conseguir el valor
-# TODO:
-# Implementar solucion para 'let my_var = q[{0,3,5}]'
 
 def get_close_bracket_index(line, start_index):
     bracket_level = 0
@@ -231,18 +229,21 @@ def get_indexes(key, name, index, translated_code_info):
 
     # Normal case
     if not TranslatorUtils.is_custom_gate and not TranslatorUtils.is_custom_def:
-        qsimov_start_index = translated_code_info[key][name]["start_index"]
+        # qsimov_start_index = translated_code_info[key][name]["start_index"]
 
         if index != -1:
             index_splitted = str(index).split(":")
             if len(index_splitted) > 1:
-                indexes = [i for i in range(qsimov_start_index + int(index_splitted[0]), qsimov_start_index + int(index_splitted[1]) + 1)]
+                indexes = [translated_code_info[key][name]["indexes"][i] for i in range(int(index_splitted[0]), int(index_splitted[1]) + 1)]
+
             else:
-                indexes = [qsimov_start_index + index]
+                # indexes = [qsimov_start_index + index]
+                indexes = [translated_code_info[key][name]["indexes"][index]]
 
         else:
-            size_reg = translated_code_info[key][name]["size"]
-            indexes = [i for i in range(qsimov_start_index, qsimov_start_index + size_reg)]
+            # size_reg = translated_code_info[key][name]["size"]
+            # indexes = [i for i in range(qsimov_start_index, qsimov_start_index + size_reg)]
+            indexes = translated_code_info[key][name]["indexes"]
 
         return indexes
     
@@ -277,6 +278,35 @@ class DataTypeTranslator:
         try:        return line.index("=")      # Get '=' occurence index
         except:     return 0                    # Return 0 if it is not in the list
 
+    def get_let_indexes(self, key, line, line_index, reference_var, translated_code_info, is_quantum=True):
+        if line_index + 2 < len(line) and line[line_index + 3] == "{":
+            line_index += 4
+            slices = []
+            slice = line[line_index]
+
+            while slice.isdigit():
+                slices.append(int(slice))
+                line_index += 2
+                slice = line[line_index]
+
+            if is_quantum:
+                result = []
+                for slice in slices:
+                    result += get_indexes(key, reference_var, slice, translated_code_info)
+
+            else:
+                result = f" = [{reference_var}[slice] for slice in {slices}]"
+
+        else:
+            if is_quantum:
+                name, index, _ = get_qu_bit(line, line_index + 1)
+                result = get_indexes(key, name, index, translated_code_info)
+
+            else:
+                result = f" = {get_expression(line[line_index + 1:], translated_code_info)}"
+
+        return result
+
     def translate_qubit(self, line_number, line, translated_code_info):
         '''
         UCs:
@@ -297,14 +327,19 @@ class DataTypeTranslator:
 
 
         registered_qubits = translated_code_info[translator_utils.KEY_QUBITS]
-        if registered_qubits:   
-            last_qubit = next(reversed(registered_qubits.values()))
-            start_index = last_qubit["start_index"] + last_qubit["size"]
+        if registered_qubits: 
+            reversed_reg_qubits = reversed(registered_qubits.values())  
+            last_qubit = next(reversed_reg_qubits)
+            while last_qubit["is_let"]:
+                last_qubit = next(reversed_reg_qubits)
+
+            indexes = [i for i in range(last_qubit["next_index"], last_qubit["next_index"] + qubit_amount)]
+
         else:
-            start_index = 0
+            indexes = [i for i in range(0, qubit_amount)]
 
         translated_code_info[translator_utils.AMOUNT_QUBITS] += qubit_amount
-        translated_code_info[translator_utils.KEY_QUBITS][var_id] = {"start_index": start_index, "size": qubit_amount}
+        translated_code_info[translator_utils.KEY_QUBITS][var_id] = {"indexes": indexes, "next_index": indexes[-1] + 1, "is_let": False}
         translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "qubit"}
 
         return ""
@@ -339,25 +374,29 @@ class DataTypeTranslator:
 
         registered_bits = translated_code_info[translator_utils.KEY_BITS]
         if registered_bits:   
-            last_bit = next(reversed(registered_bits.values()))
-            start_index = last_bit["start_index"] + last_bit["size"]
+            reversed_reg_bits = reversed(registered_bits.values())  
+            last_bit = next(reversed_reg_bits)
+            while last_bit["is_let"]:
+                last_bit = next(reversed_reg_bits)
+                
+            indexes = [i for i in range(last_bit["next_index"], last_bit["next_index"] + bit_amount)]
         else:
-            start_index = 0
+            indexes = [i for i in range(0, bit_amount)]
 
         # Differenciate between global and local variable definitions
         if is_global:
             translated_code_info[translator_utils.AMOUNT_BITS] += bit_amount
-            translated_code_info[translator_utils.KEY_BITS][var_id] = {"start_index": start_index, "size": bit_amount}
+            translated_code_info[translator_utils.KEY_BITS][var_id] = {"indexes": indexes, "next_index": indexes[-1] + 1, "is_let": False}
             translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": "bit"}
 
             if eq_symbol_index != 0:
                 translation = ""
-                for i in range(bit_amount):
+                for i in indexes:
                     bit = init_value[i]
 
                     if bit == 1:    op = "SET"
                     else:           op = "RESET"
-                    translation += f"{TranslatorUtils.QCircuit_name}.add_operation(f\"{op}\", c_targets=[{start_index + i}])\n"
+                    translation += f"{TranslatorUtils.QCircuit_name}.add_operation(f\"{op}\", c_targets=[{i}])\n"
 
                 translated_code_info[translator_utils.KEY_BIT_INITS].append(translation)
             
@@ -560,28 +599,21 @@ class DataTypeTranslator:
         var_id = line[eq_symbol_index - 1]
         reference_var = line[eq_symbol_index + 1]
         init_value = ""
-
-        if eq_symbol_index != 0:
-            init_value = f" = {get_expression(line[eq_symbol_index + 1:], translated_code_info)}"
-
         translation = ""
 
         if reference_var in translated_code_info[translator_utils.KEY_QUBITS]:
             type = "qubit"
-            name, index, _ = get_qu_bit(line, eq_symbol_index + 1)
-            indexes = get_indexes(translator_utils.KEY_QUBITS, name, index, translated_code_info)
-
-            translated_code_info[translator_utils.KEY_QUBITS][var_id] = {"start_index": indexes[0], "size": len(indexes)}
+            result = self.get_let_indexes(translator_utils.KEY_QUBITS, line, eq_symbol_index, reference_var, translated_code_info)
+            translated_code_info[translator_utils.KEY_QUBITS][var_id] = {"indexes": result, "next_index": result[-1] + 1, "is_let": True}
 
         elif reference_var in translated_code_info[translator_utils.KEY_BITS]:
             type = "bit"
-            name, index, _ = get_qu_bit(line, eq_symbol_index + 1)
-            indexes = get_indexes(translator_utils.KEY_BITS, name, index, translated_code_info)
-
-            translated_code_info[translator_utils.KEY_BITS][var_id] = {"start_index": indexes[0], "size": len(indexes)}
+            result = self.get_let_indexes(translator_utils.KEY_BITS, line, eq_symbol_index, reference_var, translated_code_info)
+            translated_code_info[translator_utils.KEY_BITS][var_id] = {"indexes": result, "next_index": result[-1] + 1, "is_let": True}
 
         else:
             type = translated_code_info[translator_utils.KEY_VARS_REF][reference_var]["type"]
+            init_value = self.get_let_indexes(None, line, eq_symbol_index, reference_var, translated_code_info, is_quantum=False)
             translation = f"{var_id}{init_value}"
 
         translated_code_info[translator_utils.KEY_VARS_REF][var_id] = {"id": var_id, "type": type}
@@ -1334,7 +1366,7 @@ class GateOperationTranslator:
 
         return t_targets, t_controls, t_anticontrols, t_c_controls, t_c_anticontrols
 
-    def translate_mod(self, line, translated_code_info):
+    def translate_mod(self, line_number, line, translated_code_info):
         '''
         UCs:
         
@@ -1379,7 +1411,7 @@ class GateOperationTranslator:
 
         return translation[:-1]
 
-    def translate_gate(self, line, translated_code_info):
+    def translate_gate(self, line_number, line, translated_code_info):
         '''
         UC:
 
@@ -1435,7 +1467,7 @@ class GateOperationTranslator:
 
         return translation
 
-    def translate_custom_gate(self, line, translated_code_info):
+    def translate_custom_gate(self, line_number, line, translated_code_info):
         gate = line[0]
         gate_params, line_index = get_all_params(gate, line, 1, translated_code_info, is_custom_gate=True)     # starting line_index = 1 to avoid reading '(' as the function also adds 1 to the variable
         qubits, line_index = self.get_mod_qu_bits(line, line_index, translated_code_info)
@@ -1448,7 +1480,7 @@ class GateOperationTranslator:
 
         return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={t_qubits})"
 
-    def translate_reset(self, line, translated_code_info):
+    def translate_reset(self, line_number, line, translated_code_info):
         '''
         UC:
 
@@ -1459,7 +1491,7 @@ class GateOperationTranslator:
 
         return ""
 
-    def translate_measure(self, line, translated_code_info):
+    def translate_measure(self, line_number, line, translated_code_info):
         '''
         UC:
         
@@ -1475,7 +1507,7 @@ class GateOperationTranslator:
 
         return f"{TranslatorUtils.QCircuit_name}.add_operation(\"MEASURE\", targets={qubits}, outputs={bits})"
 
-    def translate_barrier(self, line, translated_code_info):
+    def translate_barrier(self, line_number, line, translated_code_info):
         '''
         UCs:
 
@@ -1595,9 +1627,15 @@ def rotr(array, distance):
         return bit_index, line_index
 
     def translate_var_operation(self, line_number, line, key, translated_code_info):
+        var_id = line[0]
+
         if translated_code_info[key][var_id]["type"] == "bit":
+            if TranslatorUtils.is_custom_def:
+                error = f"Bitwise operations are not supported yet within the scope of a custom def\n"
+                error += f"\t(({line_number}, 0): {line})"
+                raise NotImplementedError(error)
+
             # Get output bit
-            var_id = line[0]
             line_index = 1
             output_bit, line_index = self.get_bit(line_number, line, line_index, var_id, translated_code_info)
             

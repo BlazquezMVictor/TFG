@@ -32,7 +32,8 @@ parsed_codes_folder = "ast_codes_parsed"
 # filename = "parser_classic_def_no_qubit.txt"
 # filename = "parser_program.txt"
 # filename = "parser_inv_pow.txt"
-filename = "parser_bit_ops.txt"
+# filename = "parser_bit_ops.txt"
+filename = "parser_let.txt"
 # filename = "parser_test.txt"
 
 grammar_words = {
