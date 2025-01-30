@@ -143,6 +143,11 @@ def get_expression(line_number, line, translated_code_info, is_array=False):
             error = f"There is no support yet to 'bit' variable access during execution of circuit\n"
             error += f"\t(({line_number}, {i}): {line})"
             raise NotImplementedError(error)
+        
+        elif item in translated_code_info[translator_utils.KEY_SUBROUTINE_PARAMS] and translated_code_info[translator_utils.KEY_SUBROUTINE_PARAMS][item]["type"] == "bit":
+            error = f"There is no support yet to 'bit' variable access during execution of circuit\n"
+            error += f"\t(({line_number}, {i}): {line})"
+            raise NotImplementedError(error)
 
         elif item in translator_utils.math_logic_operators:
             item = translator_utils.math_logic_operators[item]

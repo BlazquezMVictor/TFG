@@ -464,13 +464,13 @@ def f4(qubit[5] q, bit[5] b) -> bit {
 
     b[2] = measure q2;
 
-    return b[2];
+    return 0;
 }
 
 def f5(qubit q, int v, bit b) -> int{
     b = measure q;
 
-    if (b == 0) {
+    if (1 == 0) {
         v += 10;
     } else {
         v -= 10;
@@ -482,7 +482,7 @@ def f5(qubit q, int v, bit b) -> int{
 f1(qb);
 f2(qbs[0], qbs[1]);
 f3(qbs);
-cb = f4(qbs, cbs);
+cb = 1;
 int var = f5(qb, test, cbs[3]);
 '''
 

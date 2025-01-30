@@ -288,13 +288,7 @@ program
               returnStatement
                 return
                 expression
-                  expression
-                    b
-                  indexOperator
-                    [
-                    expression
-                      2
-                    ]
+                  0
                 ;
           }
   statementOrScope
@@ -344,7 +338,7 @@ program
                 (
                 expression
                   expression
-                    b
+                    1
                   ==
                   expression
                     0
@@ -439,15 +433,7 @@ program
           cb
         =
         expression
-          f4
-          (
-          expressionList
-            expression
-              qbs
-            ,
-            expression
-              cbs
-          )
+          1
         ;
   statementOrScope
     statement

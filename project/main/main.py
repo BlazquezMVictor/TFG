@@ -29,11 +29,11 @@ parsed_codes_folder = "ast_codes_parsed"
 # filename = "parser_classic_if.txt"          # Problemas con el indent
 # filename = "parser_classic_for.txt"
 # filename = "parser_classic_while.txt"
-# filename = "parser_classic_def_no_qubit.txt"      # Hay un problema
-# filename = "parser_classic_def.txt"               # Hay un problema
+# filename = "parser_classic_def_no_qubit.txt"
+filename = "parser_classic_def.txt"
 # filename = "parser_program.txt"                   # Hay un problema
 # filename = "parser_bit_ops.txt"
-filename = "parser_let.txt"
+# filename = "parser_let.txt"
 # filename = "parser_test.txt"
 
 grammar_words = {
