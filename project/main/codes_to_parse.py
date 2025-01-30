@@ -498,24 +498,24 @@ gate my_gate(a) c, t {
     ry(a) c;
     cx c, t;
 }
-gate my_phase(a) c {
-    ctrl @ rz(a) c;
+gate my_phase(a) c, t{
+    ctrl @ rz(a) c, t;
 }
 
-my_gate(a * 2) q[0], q[0];
+my_gate(a * 2) aliased[0], q[1];
 mid[0] = measure q[0];
 mid[1] = measure q[1];
 
-while (mid == "00") {
+while ("11" == "00") {
     reset q[0];
     reset q[1];
     my_gate(a) q[0], q[1];
-    my_phase(a - pi/2) q[1];
+    my_phase(a - pi/2) q[0], aliased[1];
     mid[0] = measure q[0];
     mid[1] = measure q[1];
 }
 
-if (mid[0]) {
+if (true) {
     let inner_alias = q[0:1];
 }
 

@@ -1,7 +1,7 @@
 program
   version
     OPENQASM
-    3.0
+    3
     ;
   statementOrScope
     statement
@@ -135,6 +135,8 @@ program
         )
         identifierList
           c
+          ,
+          t
         scope
           {
           statementOrScope
@@ -153,6 +155,10 @@ program
                   gateOperand
                     indexedIdentifier
                       c
+                  ,
+                  gateOperand
+                    indexedIdentifier
+                      t
                 ;
           }
   statementOrScope
@@ -171,7 +177,7 @@ program
         gateOperandList
           gateOperand
             indexedIdentifier
-              q
+              aliased
               indexOperator
                 [
                 expression
@@ -184,7 +190,7 @@ program
               indexOperator
                 [
                 expression
-                  0
+                  1
                 ]
         ;
   statementOrScope
@@ -238,7 +244,7 @@ program
         (
         expression
           expression
-            mid
+            "11"
           ==
           expression
             "00"
@@ -246,32 +252,6 @@ program
         statementOrScope
           scope
             {
-            statementOrScope
-              statement
-                resetStatement
-                  reset
-                  gateOperand
-                    indexedIdentifier
-                      q
-                      indexOperator
-                        [
-                        expression
-                          0
-                        ]
-                  ;
-            statementOrScope
-              statement
-                resetStatement
-                  reset
-                  gateOperand
-                    indexedIdentifier
-                      q
-                      indexOperator
-                        [
-                        expression
-                          1
-                        ]
-                  ;
             statementOrScope
               statement
                 gateCallStatement
@@ -321,6 +301,15 @@ program
                     gateOperand
                       indexedIdentifier
                         q
+                        indexOperator
+                          [
+                          expression
+                            0
+                          ]
+                    ,
+                    gateOperand
+                      indexedIdentifier
+                        aliased
                         indexOperator
                           [
                           expression
@@ -378,13 +367,7 @@ program
         if
         (
         expression
-          expression
-            mid
-          indexOperator
-            [
-            expression
-              0
-            ]
+          true
         )
         statementOrScope
           scope

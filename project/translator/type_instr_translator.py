@@ -1502,7 +1502,9 @@ class GateOperationTranslator:
         reset targets;
         '''
 
-        return ""
+        error = f"The builtin function 'reset' is not supported yet\n"
+        error += f"\t(({line_number}, {0}): {line})"
+        raise NotImplementedError(error)
 
     def translate_measure(self, line_number, line, translated_code_info):
         '''
