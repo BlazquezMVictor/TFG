@@ -1,0 +1,9 @@
+antlr4-python3-runtime
+
+[all]
+pytest>=6.0
+pyyaml
+
+[tests]
+pytest>=6.0
+pyyaml

@@ -1,5 +1,6 @@
 from .type_instr_translator import *
 from .translator_utils import TranslatorUtils
+from openqasm_grammar import openqasm_reference_parser as parser
 
 class Translator:
     def __init__(self):
@@ -28,6 +29,105 @@ class Translator:
         }
         self.translated_code = []
 
+        self.grammar_words = {
+        "program",
+        "version",
+        "statementOrScope",
+        "statement",
+        "annotation",
+        "scope",
+        "pragma",
+
+        # Statement stuff
+        "aliasDeclarationStatement",
+        "assignmentStatement",
+        "barrierStatement",
+        "boxStatement",
+        "breakStatement",
+        "calStatement",
+        "calibrationGrammarStatement",
+        "classicalDeclarationStatement",
+        "constDeclarationStatement",
+        "continueStatement",
+        "defStatement",
+        "defcalStatement",
+        "delayStatement",
+        "endStatement",
+        "expressionStatement",
+        "externStatement",
+        "forStatement",
+        "gateCallStatement",
+        "gateStatement",
+        "ifStatement",
+        "includeStatement",
+        "ioDeclarationStatement",
+        "measureArrowAssignmentStatement",
+        "oldStyleDeclarationStatement",
+        "quantumDeclarationStatement",
+        "resetStatement",
+        "returnStatement",
+        "switchStatement",
+        "whileStatement",
+        
+        # START top-level statement definitions
+        # Inclusion statements
+
+        # Control-flow stuff
+        "scalarType",
+        "setExpression",
+        "rangeExpression",
+        "expression",
+        "measureExpression",
+        "switchCaseItem",
+        "expressionList",
+
+        # Quantum directive statements stuff
+        "gateOperandList",
+        "designator",
+        "gateModifier",
+        "indexedIdentifier",
+        "gateOperand",
+
+        # Primite declaration statements
+        "aliasExpression",
+        "arrayType",
+        "declarationExpression",
+        "qubitType",
+
+        # Declaration and definitions of higher-order objects
+        "argumentDefinitionList",
+        "returnSignature",
+        "externArgumentList",
+        "identifierList",
+
+        # Non declaration assignments and calculations
+
+        # Statements where the bulk is in the calibration language
+        "defcalTarget",
+        "defcalArgumentDefinitionList",
+        "defcalOperandList",
+        # END top-level statement definitions
+
+        # START expression deefinitions
+        "indexOperator",
+        "arrayLiteral",
+        # END  expression definitions
+
+        # START type definitions
+        "arrayReferenceType",
+        "defcalArgumentDefinition",
+        "argumentDefinition",
+        "defcalOperand",
+        "externArgument",
+        # END type definitions
+
+
+    }
+        self.irrelevant_items = {
+            ";",
+            "<EOF>"
+        }
+
     def compute_indent(self, amount_tabs):
         tab = "\t"
         indent = ""
@@ -49,12 +149,12 @@ class Translator:
 
         return [lines]
 
-    def translate(self, parsed_code):
+    def get_translation(self, clean_code):
         custom_gate_init_indent = -1
         custom_def_init_indent = -1
         gate_translation = ""
 
-        for i, line in enumerate(parsed_code):
+        for i, line in enumerate(clean_code):
             # Get the keyword of the instruction to know which kind of translation we have to do
             keyword = line[1][0]
 
@@ -148,3 +248,126 @@ class Translator:
         translation += self.translated_code
 
         return translation
+    
+    def parse_code(self, code):
+        return  parser.pretty_tree(program=code)
+
+    def remove_jump_line(self, code):
+        result = []
+        for line in code:
+            result.append(line.replace("\n", ""))
+
+        return result
+
+    # TODO:
+    # Junta metodos "remove_blank_spaces" y "get_relevant_info"
+    def remove_blank_spaces(self, code):
+        word_to_exclude_from_starting_code = {"program", "includeStatement"}
+        result = []
+
+        for line in code:
+            line = line.split(" ")
+            line_result = []
+            statement_found = False
+            append = True
+
+            for word in line:
+                if word in word_to_exclude_from_starting_code:
+                    append = False
+                    break
+
+                if statement_found and word != "":
+                    line_result.append(word)
+
+                if not statement_found:
+                    line_result.append(word)
+
+                if not statement_found and word == "statement":
+                    statement_found = True
+            
+            if append and statement_found:
+                result.append(line_result)
+
+        return result
+
+    def get_line_indent(self, line):
+        indent = 0
+
+        for word in line:
+            if word != "":
+                return indent
+            indent += 1
+
+    def get_info(self, line):
+        result = []
+
+        for word in line:
+            if word not in self.grammar_words and word not in self.irrelevant_items:
+                result.append(word)
+
+        return result
+
+    def get_relevant_info(self, code):
+        result = []
+        last_indent = 0
+        plus_1_indent_keywords = {"if", "for", "while", "def", "gate"}
+
+        for line in code:
+            blank_indent = self.get_line_indent(line)
+            info = self.get_info(line[blank_indent:])
+
+            result.append((last_indent, info))
+
+            if info[0] in plus_1_indent_keywords:
+                last_indent += 1
+
+            if info[0] != "for" and info[0] != "array":
+                item = info[-1]
+                i = -1
+                while (item == "}"):
+                    last_indent -= 1
+                    i -= 1
+                    item = info[i]
+            
+
+        return result
+
+    def remove_scope_brackets(self, code):
+        code_length = len(code)
+        i = 0
+
+        while i < code_length:
+            _, line = code[i]
+
+            if line[0] != "array" and line[0] != "for":
+                if line[0] == "else":
+                    i += 1
+                    continue
+
+                if line[-1] == "else":
+                    code.insert(i+1, (code[i+1][0]-1, ["else"]))
+                    code_length += 1
+                    line.pop(-1)
+
+                item = line[-1]
+                while (item == "}"):
+                    line.pop(-1)
+                    item = line[-1]
+
+            i += 1
+
+    def clean_code(self, code):
+        result = code.split("statementOrScope")
+        result = self.remove_jump_line(result)
+        result = self.remove_blank_spaces(result)
+        result = self.get_relevant_info(result)
+        self.remove_scope_brackets(result)
+
+        return result
+    
+    def translate(self, code):
+        result = self.parse_code(code)
+        result = self.clean_code(result)
+        result = self.get_translation(result)
+
+        return result

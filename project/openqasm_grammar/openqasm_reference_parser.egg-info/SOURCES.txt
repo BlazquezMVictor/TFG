@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+setup.cfg
+../../LICENSE
+openqasm_reference_parser/__init__.py
+openqasm_reference_parser/exceptions.py
+openqasm_reference_parser/qasm3Lexer.py
+openqasm_reference_parser/qasm3Parser.py
+openqasm_reference_parser/qasm3ParserListener.py
+openqasm_reference_parser/qasm3ParserVisitor.py
+openqasm_reference_parser/tools.py
+openqasm_reference_parser.egg-info/PKG-INFO
+openqasm_reference_parser.egg-info/SOURCES.txt
+openqasm_reference_parser.egg-info/dependency_links.txt
+openqasm_reference_parser.egg-info/requires.txt
+openqasm_reference_parser.egg-info/top_level.txt
+tests/test_grammar.py
