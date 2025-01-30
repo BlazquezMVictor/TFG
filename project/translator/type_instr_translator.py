@@ -1634,6 +1634,63 @@ def rotr(array, distance):
         
         return bit_index, line_index
 
+    def get_operator(self, line_number, line, line_index, translated_code_info):
+        var_id = line[line_index]
+        if var_id.isdigit():    is_digit = True
+        else:                   is_digit = False
+        line_index += 1
+
+        if var_id not in translated_code_info[translator_utils.KEY_BITS] and not is_digit:
+            error = f"Bit operations only support 'bit' variables or single digits as operators\n"
+            error += f"\t(({line_number}, {line_index}): {line})"
+            raise NotImplementedError(error)
+
+        if is_digit:
+            if len(var_id) > 1:
+                error = f"We only support bit operations of length 1 bit. Cannot operate whole registers\n"
+                error += f"\t(({line_number}, {line_index-1}): {line})"
+                raise NotImplementedError(error)
+
+            else:
+                operator_bit = [var_id]
+                line_index += 1
+
+        else:
+            operator_bit, line_index = self.get_bit(line_number, line, line_index, var_id, translated_code_info)
+
+        operator_bit[0] = int(operator_bit[0])
+        return operator_bit, line_index, is_digit
+
+    def is_NOT(self, line_number, line, line_index, first_operator_bit, is_digit, output_bit):
+        if is_digit:
+            error = f"'NOT' operations is only supported with 'bit' type variables, not digits"
+            error += f"\t(({line_number}, {line_index}): {line})"
+            raise NotImplementedError(error)
+        
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation(f\"NOT\", c_targets={first_operator_bit}, outputs={output_bit})"
+            return translation
+
+    def assignation(self, line_number, line, line_index, first_operator_bit, is_digit, output_bit):
+        if is_digit:
+            if first_operator_bit[0] == 1:
+                translation = f"{TranslatorUtils.QCircuit_name}.add_operation(f\"SET\", c_targets={output_bit})"
+                
+            elif first_operator_bit[0] == 0:
+                translation = f"{TranslatorUtils.QCircuit_name}.add_operation(f\"RESET\", c_targets={output_bit})"
+
+            else:
+                error = f"The bit value used is not compatible\n"
+                error += f"\t(({line_number}, {line_index - 1}): {line})"
+                raise ValueError(error)
+            
+            return translation
+        
+        else:
+            error = f"There is no support yet to 'bit' variable access during execution of circuit\n"
+            error += f"\t(({line_number}, {line_index - 1}): {line})"
+            raise NotImplementedError(error)
+
     def translate_var_operation(self, line_number, line, key, translated_code_info):
         var_id = line[0]
 
@@ -1647,7 +1704,7 @@ def rotr(array, distance):
             line_index = 1
             output_bit, line_index = self.get_bit(line_number, line, line_index, var_id, translated_code_info)
             
-            # We assume only '=' operator is used cause if not the value of the operation would be forgotten and this does not make sense
+            # We only give support to '=' operation
             if line[line_index] != "=":
                 error = f"We only support '=' operation for classic bits\n"
                 error += f"\t(({line_number}, {line_index}): {line})"
@@ -1661,15 +1718,16 @@ def rotr(array, distance):
                 line_index += 1
 
             # Get first bit operator
-            var_id = line[line_index]
-            line_index += 1
-            first_operator_bit, line_index = self.get_bit(line_number, line, line_index, var_id, translated_code_info)
+            first_operator_bit, line_index, is_digit = self.get_operator(line_number, line, line_index, translated_code_info)
 
             if is_NOT:
-                translation = f"{TranslatorUtils.QCircuit_name}.add_operation(f\"NOT\", c_targets={first_operator_bit}, outputs={output_bit})"
-                return translation
+                return self.is_NOT(line_number, line,line_index, first_operator_bit, is_digit, output_bit)
+
+            # If it is just a normal assignation, there is no operation (AND, OR, XOR) right after, then we must check if the value to assign is a number or a variable
+            if line_index >= len(line):
+                return self.assignation(line_number, line, line_index, first_operator_bit, is_digit, output_bit)
             
-            # Get mathematical operator
+            # Get mathematical/logical operator
             operator = line[line_index]
             if operator == "|":     op = "OR"
             elif operator == "&":   op = "AND"
@@ -1681,9 +1739,7 @@ def rotr(array, distance):
 
             # Get second bit operator
             line_index += 1
-            var_id = line[line_index]
-            line_index += 1
-            second_operator_bit, line_index = self.get_bit(line_number, line, line_index, var_id, translated_code_info)
+            second_operator_bit, line_index, is_digit = self.get_operator(line_number, line, line_index, translated_code_info)
 
             # Make the translation
             c_targets = [first_operator_bit[0], second_operator_bit[0]]

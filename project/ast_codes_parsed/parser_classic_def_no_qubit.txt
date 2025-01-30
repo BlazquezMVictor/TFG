@@ -5,21 +5,9 @@ program
     ;
   statementOrScope
     statement
-      includeStatement
+      includeStatement        
         include
-        "stdgates.inc"
-        ;
-  statementOrScope
-    statement
-      quantumDeclarationStatement
-        qubitType
-          qubit
-          designator
-            [
-            expression
-              5
-            ]
-        targets
+        "stdgates.inc"        
         ;
   statementOrScope
     statement
@@ -28,8 +16,8 @@ program
         my_subroutine
         (
         argumentDefinitionList
-          argumentDefinition
-            scalarType
+          argumentDefinition  
+            scalarType        
               int
             a1
           ,
@@ -402,7 +390,7 @@ program
             ]
         =
         expression
-          c
+          1
         ;
   statementOrScope
     statement
@@ -416,7 +404,7 @@ program
             ]
         =
         expression
-          c2
+          0
         ;
   statementOrScope
     statement
@@ -432,12 +420,23 @@ program
           result
         =
         expression
-          parity
-          (
-          expressionList
+          expression
             expression
               param
-          )
+            indexOperator
+              [
+              expression
+                0
+              ]
+          |
+          expression
+            expression
+              param
+            indexOperator
+              [
+              expression
+                1
+              ]
         ;
   statementOrScope
     statement

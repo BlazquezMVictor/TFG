@@ -425,10 +425,10 @@ bit c2;
 c = measure q;
 c2 = measure r;
 bit[2] param;
-param[0] = c;
-param[1] = c2;
+param[0] = 1;
+param[1] = 0;
 bit result;
-result = parity(param);
+result = param[0] | param[1];
 
 
 array[int[8], 3, 5] my_arr1;
