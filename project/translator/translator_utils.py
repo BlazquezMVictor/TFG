@@ -67,8 +67,6 @@ class TranslatorUtils:
             "/*": "'''",
             "*/": "'''"
         }
-        # TODO:
-        # Dar soporte a los tipos de datos Input/Output
         self.data_types = {
             "qubit": "translate_qubit",
             "bit": "translate_bit",
@@ -79,10 +77,12 @@ class TranslatorUtils:
             "complex": "translate_complex",
             "bool": "translate_bool",
             "const": "translate_const",
-            # "duration": "translate_duration",
             "array": "translate_array",
-            # "stretch": "translate_stretch",
-            "let": "translate_let"      # not a data type but an alias -> let myreg = q[1:4]
+            "let": "translate_let",      # not a data type but an alias -> let myreg = q[1:4]
+            "duration": "translate_duration",
+            "stretch": "translate_stretch",
+            "input": "translate_input",
+            "output": "translate_output"
 
         }
         self.builtin_constants = {
@@ -140,46 +140,34 @@ class TranslatorUtils:
             "cswap": "translate_cswap",
             "cu": "translate_cu",
             "U": "translate_u",
-            "gphase": "translate_gphase",   # TODO: Esto parece que es una builtin function
+            "gphase": "translate_gphase",
         }
         self.gate_operations = {
             "ctrl": "translate_mod",     # 'ctrl @' indicates that the following gate is controlled -> ctrl @ rz(pi) q1, q2; q1 is control & q2 is target
             "negctrl": "translate_mod",  # it is as 'ctrl' but uses 0 as activation bit instead of 1
             "inv": "translate_mod",
             "pow": "translate_mod",
-            # "gate": "translate_gate",       # Puede ocupar mas de una linea
             "reset": "translate_reset",
-            # "measure": "translate_measure",
             "barrier": "translate_barrier",
         }
         self.classic_instructions = {
             "rotl": "translate_rotl",
             "rotr": "translate_rotr",
-            "if": "translate_if_else",         # Puede ocupar mas de una linea (recordar que puede tener else statement)
+            "if": "translate_if_else",
             "else": "translate_if_else",
-            "for": "translate_for",       # Puede ocupar mas de una linea
-            "while": "translate_while",   # Puede ocupar mas de una linea
-            # "def": "translate_def",           # Puede ocupar mas de una linea
+            "for": "translate_for",
+            "while": "translate_while",
             "break": "translate_break",
             "continue": "translate_continue",
             "return": "translate_return",
             "end": "translate_end",              # It terminates the program
-            # "switch": "match",      # Not yet implemented # Puede ocupar mas de una linea
-            # "case": "case",         # Not yet implemented
-            # "default": "case _",    # Not yet implemented
+            # "switch": "match",      # Not yet implemented in openqasm
+            # "case": "case",         # Not yet implemented in openqasm
+            # "default": "case _",    # Not yet implemented in openqasm
 
         }
     
     def matrix_square_roots(matrix):
-        """
-        Compute all possible square roots of a given quantum matrix.
-
-        Parameters:
-            matrix (np.ndarray): A square matrix (complex or real) to compute the square root of.
-
-        Returns:
-            matrix: A np.ndarray, square root of the input matrix.
-        """
         # Verify that the input is square
         if matrix.shape[0] != matrix.shape[1]:
             raise ValueError("Input matrix must be square.")

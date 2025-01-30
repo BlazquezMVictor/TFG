@@ -627,6 +627,26 @@ class DataTypeTranslator:
 
         return translation
 
+    def translate_duration(self, line_number, line, translated_code_info):
+        error = f"There is no support yet for 'duration' type variables\n"
+        error += f"\t(({line_number}, 0): {line})"
+        raise NotImplementedError(error)
+    
+    def translate_stretch(self, line_number, line, translated_code_info):
+        error = f"There is no support yet for 'stretch' type variables\n"
+        error += f"\t(({line_number}, 0): {line})"
+        raise NotImplementedError(error)
+    
+    def translate_input(self, line_number, line, translated_code_info):
+        error = f"There is no support yet for 'input' type variables\n"
+        error += f"\t(({line_number}, 0): {line})"
+        raise NotImplementedError(error)
+    
+    def translate_output(self, line_number, line, translated_code_info):
+        error = f"There is no support yet for 'output' type variables\n"
+        error += f"\t(({line_number}, 0): {line})"
+        raise NotImplementedError(error)
+
 class STDGateTranslator:
     def __init__(self):
         self.S_matrix = Matrix([[1, 0], [0, 1j]])
