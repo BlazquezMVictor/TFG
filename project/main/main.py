@@ -49,5 +49,4 @@ if __name__ == "__main__":
     translator = Translator()
     translation = translator.translate(code)
 
-    for line in translation:
-        print(line)
+    print(translation)

@@ -3,9 +3,11 @@ from .translator_utils import TranslatorUtils
 from openqasm_grammar import openqasm_reference_parser as parser
 
 class Translator:
-    def __init__(self):
+    def __init__(self, shots=1, is_testing=False):
         self.init_type_instr_translators()
         self.init_data_structures()
+        self.shots = shots
+        self.is_testing = is_testing
 
     def init_type_instr_translators(self):
         self.translator_utils = TranslatorUtils()
@@ -145,6 +147,15 @@ class Translator:
         lines = f"import qsimov as {qsimov_name}\n"
         lines += f"import numpy as np\n"
         lines += f"from sympy.matrices import Matrix\n"
+
+        if self.is_testing:
+            lines += '''
+def get_dict(input_list):
+    binary_strings = [''.join(['1' if val else '0' for val in sublist]) for sublist in input_list]
+    counts = Counter(binary_strings)
+    return dict(counts)\n
+    '''
+
         lines += f"\n{QCircuit_name} = {qsimov_name}.QCircuit({amount_qubits}, {amount_bits}, \"my_qsimov_circuit\")"
 
         return [lines]
@@ -247,7 +258,20 @@ class Translator:
         translation += [""]
         translation += self.translated_code
 
-        return translation
+        str_translation = ""
+        for line in translation:
+            str_translation += line
+            str_translation += "\n"
+
+        str_translation += f"\nexecutor = {TranslatorUtils.qsimov_name}.Drewom()\n"
+        str_translation += f"result = executor.execute({TranslatorUtils.QCircuit_name}, shots={self.shots})\n"
+
+        if self.is_testing:
+            str_translation += f"result = get_dict(result)\n"
+
+        str_translation += f"print(result)"
+
+        return str_translation
     
     def parse_code(self, code):
         return  parser.pretty_tree(program=code)
