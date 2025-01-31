@@ -120,6 +120,10 @@ Tiene sentido meter bits clasicos dada esta situacion
 		- Mejor no añadrilo y usar una varibale booleana o binaria o lo que sea
 
 NOTAS
+- Hacer una primera identificaion en funcionalidades
+	- Aqui openqasm hace una declaracion, como esta cubierta esta declaracion en qsimov
+		- Despues bajamos de nivel y vemos que palabras son las correctas y el orden en el que deben ir
+
 - QGate es como un QCircuit pero no acepta operaciones no reversibles
 	- QGate permite crear una puerta a partir de otras puertas
 

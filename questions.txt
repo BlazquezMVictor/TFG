@@ -5,3 +5,33 @@ Sobre la puerta P
 	- Paulet parece que tampoco la ha utilizado
 
 Importa el orden cuando hago potencia de puerta y despues inversa?
+
+TESTING
+- stdgates
+	- de una en una
+	- conjuntos
+		- par de Bell
+		- toffoli con otras que modifican el control
+
+- gate_operations
+	- inv y pow de uno en uno
+	- ctrl y negctrl de uno en uno (con un parametro)
+	- ctrl y negctrl de uno en uno (con varios parametros)
+
+	- puertas custom
+		- sin parametros con un qubit
+		- sin parametros con varios qubits
+		- con parametros con un qubit
+		- con parametros con varios qubits
+
+	- combinaciones
+		- modificadores
+		- modificadores con custom gates 
+
+- circuitos complejos
+	- mirar alguno de ejemplo y replicarlo
+
+- mostrar gestion de errores
+	- uso de reset
+	- uso de p
+	- etc
