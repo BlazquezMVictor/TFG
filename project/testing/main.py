@@ -11,14 +11,16 @@ from qiskit import transpile
 from qiskit.providers.basic_provider import BasicSimulator
 
 from translator.translator import Translator
+from test_codes import stdgates_codes
 
 
-translator = Translator(shots=1000, is_testing=True)
+translator = Translator(shots=1000)
 
 def get_dict(input_list):
-    binary_strings = [''.join(['1' if val else '0' for val in sublist]) for sublist in input_list]
+    binary_strings = [''.join(['1' if val else '0' for val in reversed(sublist)]) for sublist in input_list]
     counts = Counter(binary_strings)
     return dict(counts)
+
 # code = '''
 #     OPENQASM 3.0;
 #     include "stdgates.inc";
@@ -38,40 +40,30 @@ def get_dict(input_list):
 #     b[1] = measure q[1];
 # '''
 
-qiskit_codes = '''
-OPENQASM 3.0;
-include "stdgates.inc";
+i = 0
+codes = stdgates_codes.split("::")
+while i < len(codes):
+    title = codes[i][:-2]
+    amount_qubits = codes[i][-2]
+    code = codes[i + 1]
+    
+    print(title)
+    # QISKIT
+    circ = qiskit.qasm3.loads(code)
+    backend = BasicSimulator()
+    transpiled_circ = transpile(circ, backend)
+    result = backend.run(transpiled_circ, shots=1000).result()
+    counts = binary_counts = {format(int(k, 16), f"0{amount_qubits}b"): v for k, v in result.data()['counts'].items()}
+    print(counts)
 
-qubit[1] q;
-bit[1] b;
+    # QSIMOV
+    env = {}
+    exec(translator.translate(code), env)
+    print(get_dict(env["result"]))
 
-reset q[0];
+    print()
 
-x q[0];
-b[0] = measure q[0];
-'''
-
-qsimov_codes = '''
-OPENQASM 3.0;
-include "stdgates.inc";
-
-qubit[1] q;
-bit[1] b;
-
-x q[0];
-b[0] = measure q[0];
-'''
-
-circ = qiskit.qasm3.loads(qiskit_codes)
-
-backend = BasicSimulator()
-transpiled_circ = transpile(circ, backend)
-result = backend.run(transpiled_circ, shots=1000).result()
-counts = binary_counts = {format(int(k, 16), '01b'): v for k, v in result.data()['counts'].items()}
-
-print(counts)
-
-exec(translator.translate(qsimov_codes))
+    i += 2
 
 
 

@@ -1,0 +1,352 @@
+# -------------------------
+# QISKIT CODES
+# -------------------------
+stdgates_codes = '''
+-- X ------ 1
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[1] q;
+bit[1] b;
+
+reset q[0];
+
+x q[0];
+b[0] = measure q[0];
+::
+-- Y ------ 1
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[1] q;
+bit[1] b;
+
+reset q[0];
+
+y q[0];
+b[0] = measure q[0];
+::
+-- Z ------ 1
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[1] q;
+bit[1] b;
+
+reset q[0];
+
+z q[0];
+b[0] = measure q[0];
+::
+-- H ------ 1
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[1] q;
+bit[1] b;
+
+reset q[0];
+
+h q[0];
+b[0] = measure q[0];
+::
+-- S ------ 1
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[1] q;
+bit[1] b;
+
+reset q[0];
+
+s q[0];
+b[0] = measure q[0];
+::
+-- SDG ------ 1
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[1] q;
+bit[1] b;
+
+reset q[0];
+
+sdg q[0];
+b[0] = measure q[0];
+::
+-- T ------ 1
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[1] q;
+bit[1] b;
+
+reset q[0];
+
+t q[0];
+b[0] = measure q[0];
+::
+-- TDG ------ 1
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[1] q;
+bit[1] b;
+
+reset q[0];
+
+tdg q[0];
+b[0] = measure q[0];
+::
+-- SX ------ 1
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[1] q;
+bit[1] b;
+
+reset q[0];
+
+sx q[0];
+b[0] = measure q[0];
+::
+-- RX(pi) ------ 1
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[1] q;
+bit[1] b;
+
+reset q[0];
+
+rx(pi) q[0];
+b[0] = measure q[0];
+::
+-- RY(pi) ------ 1
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[1] q;
+bit[1] b;
+
+reset q[0];
+
+ry(pi) q[0];
+b[0] = measure q[0];
+::
+-- RZ(pi) ------ 1
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[1] q;
+bit[1] b;
+
+reset q[0];
+
+rz(pi) q[0];
+b[0] = measure q[0];
+::
+-- CX ------ 2
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[2] q;
+bit[2] b;
+
+reset q[0];
+reset q[1];
+
+x q[0];
+cx q[0], q[1];
+
+b[0] = measure q[0];
+b[1] = measure q[1];
+::
+-- CY ------ 2
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[2] q;
+bit[2] b;
+
+reset q[0];
+reset q[1];
+
+x q[0];
+cy q[0], q[1];
+
+b[0] = measure q[0];
+b[1] = measure q[1];
+::
+-- CZ ------ 2
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[2] q;
+bit[2] b;
+
+reset q[0];
+reset q[1];
+
+x q[0];
+cz q[0], q[1];
+
+b[0] = measure q[0];
+b[1] = measure q[1];
+::
+-- CRX(pi) ------ 2
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[2] q;
+bit[2] b;
+
+reset q[0];
+reset q[1];
+
+x q[0];
+crx(pi) q[0], q[1];
+
+b[0] = measure q[0];
+b[1] = measure q[1];
+::
+-- CRY(pi) ------ 2
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[2] q;
+bit[2] b;
+
+reset q[0];
+reset q[1];
+
+x q[0];
+cry(pi) q[0], q[1];
+
+b[0] = measure q[0];
+b[1] = measure q[1];
+::
+-- CRZ(pi) ------ 2
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[2] q;
+bit[2] b;
+
+reset q[0];
+reset q[1];
+
+x q[0];
+crz(pi) q[0], q[1];
+
+b[0] = measure q[0];
+b[1] = measure q[1];
+::
+-- CH ------ 2
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[2] q;
+bit[2] b;
+
+reset q[0];
+reset q[1];
+
+x q[0];
+ch q[0], q[1];
+
+b[0] = measure q[0];
+b[1] = measure q[1];
+::
+-- SWAP ------ 2
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[2] q;
+bit[2] b;
+
+reset q[0];
+reset q[1];
+
+x q[0];
+swap q[0], q[1];
+
+b[0] = measure q[0];
+b[1] = measure q[1];
+::
+-- CCX ------ 3
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[3] q;
+bit[3] b;
+
+reset q[0];
+reset q[1];
+reset q[2];
+
+x q[0];
+x q[1];
+ccx q[0], q[1], q[2];
+
+b[0] = measure q[0];
+b[1] = measure q[1];
+b[2] = measure q[2];
+::
+-- CSWAP ------ 3
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[3] q;
+bit[3] b;
+
+reset q[0];
+reset q[1];
+reset q[2];
+
+x q[0];
+x q[1];
+cswap q[0], q[1], q[2];
+
+b[0] = measure q[0];
+b[1] = measure q[1];
+b[2] = measure q[2];
+
+::
+-- U ------ 1
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[1] q;
+bit[1] b;
+
+reset q[0];
+
+U(pi, 10, 0.5) q[0];
+
+b[0] = measure q[0];
+'''
+

@@ -270,7 +270,7 @@ def add_new_gate_matrix(gate, gate_matrix, min_args=0, max_args=0, aliases=[]):
     else:           t_aliases = ""
     func = f"def add_{gate}():\n"
     func += f"\treturn {gate_matrix}\n"
-    func += f"{TranslatorUtils.qsimov_name}.add_gate(\"{gate}\", add_{gate}(), {min_args}, {max_args}{t_aliases})\n"
+    func += f"{TranslatorUtils.qsimov_name}.add_gate(\"{gate}\", add_{gate}, {min_args}, {max_args}{t_aliases})\n"
 
     return func
 
@@ -1522,9 +1522,10 @@ class GateOperationTranslator:
         reset targets;
         '''
 
-        error = f"The builtin function 'reset' is not supported yet\n"
-        error += f"\t(({line_number}, {0}): {line})"
-        raise NotImplementedError(error)
+        # error = f"The builtin function 'reset' is not supported yet\n"
+        # error += f"\t(({line_number}, {0}): {line})"
+        # raise NotImplementedError(error)
+        return ""
 
     def translate_measure(self, line_number, line, translated_code_info):
         '''
