@@ -236,20 +236,20 @@ def get_indexes(key, name, index, translated_code_info):
 
     # Normal case
     if not TranslatorUtils.is_custom_gate and not TranslatorUtils.is_custom_def:
-        # qsimov_start_index = translated_code_info[key][name]["start_index"]
-
+        if not str(index).isdigit():
+            error = f"The use of non digit value to index a qubit/bit is not yet supported\n"
+            error += f"\t({name}[{index} ...)"
+            raise NotImplementedError(error)
+        
         if index != -1:
             index_splitted = str(index).split(":")
             if len(index_splitted) > 1:
                 indexes = [translated_code_info[key][name]["indexes"][i] for i in range(int(index_splitted[0]), int(index_splitted[1]) + 1)]
 
             else:
-                # indexes = [qsimov_start_index + index]
                 indexes = [translated_code_info[key][name]["indexes"][index]]
 
         else:
-            # size_reg = translated_code_info[key][name]["size"]
-            # indexes = [i for i in range(qsimov_start_index, qsimov_start_index + size_reg)]
             indexes = translated_code_info[key][name]["indexes"]
 
         return indexes
