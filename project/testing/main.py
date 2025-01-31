@@ -11,7 +11,7 @@ from qiskit import transpile
 from qiskit.providers.basic_provider import BasicSimulator
 
 from translator.translator import Translator
-from test_codes import stdgates_codes
+from test_codes import stdgates_codes, gate_operations_codes, complex_codes
 
 
 translator = Translator(shots=1000)
@@ -21,27 +21,11 @@ def get_dict(input_list):
     counts = Counter(binary_strings)
     return dict(counts)
 
-# code = '''
-#     OPENQASM 3.0;
-#     include "stdgates.inc";
-
-#     qubit[2] q;
-#     bit[2] b;
-    
-#     reset q[0];
-#     reset q[1];
-
-#     h q[0];
-#     cx q[0], q[1];
-
-#     reset q[0];
-
-#     b[0] = measure q[0];
-#     b[1] = measure q[1];
-# '''
-
 i = 0
-codes = stdgates_codes.split("::")
+# codes = stdgates_codes.split("::")
+# codes = gate_operations_codes.split("::")
+codes = complex_codes.split("::")
+
 while i < len(codes):
     title = codes[i][:-2]
     amount_qubits = codes[i][-2]
