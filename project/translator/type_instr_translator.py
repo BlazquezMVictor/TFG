@@ -1307,7 +1307,7 @@ class GateOperationTranslator:
         for i in range(mod_inv_pow_length):
             mod, param = mod_inv_pow[i]
             if mod == "inv":    new_gate += f"{mod}_"
-            else:               new_gate += f"{mod}({param})_"
+            else:               new_gate += f"{mod}{str(param).replace(".", "_")}_"
         new_gate += gate
 
         if new_gate not in translated_code_info[translator_utils.KEY_NEW_MATRICES]:
