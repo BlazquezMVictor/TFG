@@ -143,6 +143,8 @@ class Translator:
         amount_qubits = self.translated_code_info[self.translator_utils.AMOUNT_QUBITS]
         amount_bits = self.translated_code_info[self.translator_utils.AMOUNT_BITS]
 
+        if amount_qubits == 0:  amount_qubits = 1
+
         lines = f"import qsimov as {qsimov_name}\n"
         lines += f"import numpy as np\n"
         lines += f"from sympy.matrices import Matrix\n"
