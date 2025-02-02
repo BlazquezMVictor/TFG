@@ -236,7 +236,7 @@ def get_indexes(key, name, index, translated_code_info):
 
     # Normal case
     if not TranslatorUtils.is_custom_gate and not TranslatorUtils.is_custom_def:
-        if not str(index).isdigit():
+        if not isinstance(index, int):
             error = f"The use of non digit value to index a qubit/bit is not yet supported\n"
             error += f"\t({name}[{index} ...)"
             raise NotImplementedError(error)
