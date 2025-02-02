@@ -35,3 +35,59 @@ TESTING
 	- uso de reset
 	- uso de p
 	- etc
+
+MEMORIA
+- Introduccion
+	- Introducción
+	- Objetivos
+	- Estructura del proyecto
+
+	- A qué se refiere con estructura del proyecto? Tiene que ver con lo de scrum?
+
+- Estado del Arte
+	- Introducción
+	- Listas y enumeraciones
+		- Listas
+		- enumeraciones
+	- Tablas
+	- Figuras
+	- Código
+	- Bibliografía
+	- Conclusiones
+
+	- No entiendo este apartado en general
+		- Tengo que escribir algo?
+		- Eso solo para el índice de tabals, figuras, etc?
+		- Por qué tienes apartado de bibliografía también
+
+	- No sé si debería ser en este apartado o que pero me gustaría hablar un poquito cobre openqasm y qsimov, el por qué surgieron y cómo les va
+	- También me gustaría hablar sobre otras aproximaciones para conectar diferentes frameworks mediante openqasm
+
+- Metodología y Desarrollo
+	- Introducción
+	- Conclusiones
+
+	- Aquí hablaríamos sobre lo que comentamos con Hernán, toda la parte de scrum
+	- También hablaríamos del desarrollo como tal, explicar como funciona el código
+		- Flujo principal
+		- Funciones específicas
+
+	- Debería separar estas partes o conforme explico el scrum meter también algo del código?
+	- Quizá hablar de algunos problemas que hayan surgido también?
+
+- Experimentos y Resultados
+	- Introducción
+	- Conclusiones
+
+	- Aquí explicar como dijo Paulet, las pruebas que se han diseñado, el por qué, etc.
+	- Quizá se queda algo corto?
+	- Quizá hablar también de los problemas para hacer las pruebas, sobre todo por la parte para ejecutar el código openqasm
+
+- Conclusiones y Trabajo Futuro
+	- Conclusiones
+	- Trabajo futuro
+
+- Bibliografía
+
+- Anexo
+	- Qué se suele poner ahí?
