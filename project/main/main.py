@@ -15,33 +15,7 @@ qubit[3] q;
 bit[2] mid;
 bit[3] out;
 
-let aliased = q[0:1];
-
-gate my_gate(a) c, t {
-    ry(a) c;
-    cx c, t;
-}
-gate my_phase(a) c, t{
-    ctrl @ rz(a) c, t;
-}
-
-my_gate(a * 2) aliased[0], q[1];
-mid[0] = measure q[0];
-mid[1] = measure q[1];
-
-while ("11" == "00") {
-    my_gate(a) q[0], q[1];
-    my_phase(a - pi/2) q[0], aliased[1];
-    mid[0] = measure q[0];
-    mid[1] = measure q[1];
-}
-
-if (true) {
-    let inner_alias = q[0:1];
-    x inner_alias[1];
-}
-
-out = measure q;
+ctrl @ x mid[0], q[0];
 '''
 
 # MAIN
