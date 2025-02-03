@@ -268,9 +268,10 @@ def get_indexes(key, name, index, translated_code_info):
 def add_new_gate_matrix(gate, gate_matrix, min_args=0, max_args=0, aliases=[]):
     if aliases:     t_aliases = f", aliases={aliases}"
     else:           t_aliases = ""
+    t_overwrite = f", overwrite=True"
     func = f"def add_{gate}():\n"
     func += f"\treturn {gate_matrix}\n"
-    func += f"{TranslatorUtils.qsimov_name}.add_gate(\"{gate}\", add_{gate}, {min_args}, {max_args}{t_aliases})\n"
+    func += f"{TranslatorUtils.qsimov_name}.add_gate(\"{gate}\", add_{gate}, {min_args}, {max_args}{t_aliases}{t_overwrite})\n"
 
     return func
 
