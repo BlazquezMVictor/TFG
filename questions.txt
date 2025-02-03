@@ -39,10 +39,12 @@ TESTING
 MEMORIA
 - Introduccion
 	- Introducción
+		- Aparicion muy breve de openqasm (la definicion a pelo)
 	- Objetivos
 	- Estructura del proyecto
 
 	- A qué se refiere con estructura del proyecto? Tiene que ver con lo de scrum?
+		- Es la estructura de la memoria -> describir el indice, aqui hablaremos esto, aqui se toca esto
 
 - Estado del Arte
 	- Introducción
@@ -63,6 +65,21 @@ MEMORIA
 	- No sé si debería ser en este apartado o que pero me gustaría hablar un poquito cobre openqasm y qsimov, el por qué surgieron y cómo les va
 	- También me gustaría hablar sobre otras aproximaciones para conectar diferentes frameworks mediante openqasm
 
+	- extender mas openqasm y despues hablar sobre su soporte en otros simuladores
+	- hablar de las versiones de openqasm
+		- la 3 se esta usando en bastantes sitios
+		- se esta trabajando en 4
+		- cesga que es punta de lanza en este campo nos reecomendaron la 3.0
+
+	- hablar de los simuladores
+		- incluido qsimov al que le doy soporte
+		- "este es el pilar y estas son las apropximaciones"
+		- no hace falta justificar, con enumerar las cosas de los simuladores esta bien
+
+	-RESPUESTA
+		- Basarme en el estado del arte de la tesis de Herán o TFM (este esta mas actualizado)
+			- Mencionar alguno de los simuladores que trabajan con openqasm algun parafillo
+
 - Metodología y Desarrollo
 	- Introducción
 	- Conclusiones
@@ -75,6 +92,9 @@ MEMORIA
 	- Debería separar estas partes o conforme explico el scrum meter también algo del código?
 	- Quizá hablar de algunos problemas que hayan surgido también?
 
+	- Aludir a que con la toffoli puedes sacar el resto de puertas y que con la inversa y la potencia/raíz puedes conseguir la turing completitud (mirar cual es el conjunto de puertas necesarias (en principio toffoli y potencias(raices)))
+		- y que ademas de eso aporto mas cosas
+
 - Experimentos y Resultados
 	- Introducción
 	- Conclusiones
@@ -82,6 +102,10 @@ MEMORIA
 	- Aquí explicar como dijo Paulet, las pruebas que se han diseñado, el por qué, etc.
 	- Quizá se queda algo corto?
 	- Quizá hablar también de los problemas para hacer las pruebas, sobre todo por la parte para ejecutar el código openqasm
+		- seria interesante pero que no se me vea el plumero
+		- puedo mencionar lo que creo que deberia salir
+
+	- para rellenar un poco podemos usar imagenes para describir las pruebas que se exponen
 
 - Conclusiones y Trabajo Futuro
 	- Conclusiones
@@ -91,3 +115,4 @@ MEMORIA
 
 - Anexo
 	- Qué se suele poner ahí?
+	- Pasa algo si no se pone nada?
