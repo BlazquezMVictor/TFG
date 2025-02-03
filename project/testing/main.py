@@ -23,8 +23,7 @@ def get_dict(input_list):
 
 i = 0
 # codes = stdgates_codes.split("::")
-# codes = gate_operations_codes.split("::")
-codes = complex_codes.split("::")
+codes = gate_operations_codes.split("::")
 
 while i < len(codes):
     title = codes[i][:-2]
@@ -48,7 +47,3 @@ while i < len(codes):
     print()
 
     i += 2
-
-
-
-
