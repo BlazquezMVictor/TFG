@@ -11,7 +11,7 @@ from qiskit import transpile
 from qiskit.providers.basic_provider import BasicSimulator
 
 from translator.translator import Translator
-from test_codes import stdgates_codes, gate_operations_codes, complex_codes
+from test_codes import stdgates_codes, gate_operations_codes, deutsch_algorithm
 
 
 translator = Translator(shots=1000)
@@ -23,7 +23,8 @@ def get_dict(input_list):
 
 i = 0
 # codes = stdgates_codes.split("::")
-codes = gate_operations_codes.split("::")
+# codes = gate_operations_codes.split("::")
+codes = deutsch_algorithm.split("::")
 
 while i < len(codes):
     title = codes[i][:-2]

@@ -664,3 +664,30 @@ ctrl @ my_gate q[0], q[1];
 b[0] = measure q[0];
 b[1] = measure q[1];
 '''
+
+deutsch_algorithm = '''
+-- Deutsch (f(x) = ~x) ----- 1
+::
+OPENQASM 3.0;
+include "stdgates.inc";
+
+qubit[2] q;
+bit[1] b;
+
+gate oracle q1, q2 {
+    x q1;
+    cx q1, q2;
+    x q1;
+}
+
+x q[0];
+h q;
+
+barrier q;
+oracle q[1], q[0];
+barrier q;
+
+h q[1];
+
+b[0] = measure q[1];
+'''
