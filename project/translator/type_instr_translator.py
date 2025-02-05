@@ -1549,15 +1549,15 @@ class GateOperationTranslator:
 
         # In case we are calling a custom function, we need to rewrite the controls and anticontrols using their ids
         if TranslatorUtils.is_custom_def:
-            q_controls, q_anticontrols, c_controls, c_anticontrols, targets = self.rewrite_anti_controls(q_controls, q_anticontrols, c_controls, c_anticontrols, targets)
+            q_controls, q_anticontrols, c_controls, c_anticontrols, _ = self.rewrite_anti_controls(q_controls, q_anticontrols, c_controls, c_anticontrols, targets)
 
-        t_targets = f"targets={targets}"
+        # t_targets = f"targets={targets}"
         t_controls = f", controls={q_controls}"                         if q_controls       else ""
         t_anticontrols = f", anticontrols={q_anticontrols}"             if q_anticontrols   else ""
         t_c_controls = f", c_controls={c_controls}"                     if c_controls       else ""
         t_c_anticontrols = f", c_anticontrols={c_anticontrols}"         if c_anticontrols   else ""
 
-        return t_targets, t_controls, t_anticontrols, t_c_controls, t_c_anticontrols
+        return targets, t_controls, t_anticontrols, t_c_controls, t_c_anticontrols
 
     def translate_mod(self, line_number, line, translated_code_info):
         '''
@@ -1594,13 +1594,20 @@ class GateOperationTranslator:
 
         # Compute translation components
         t_gate = self.get_t_gate(gate, gate_params, is_inv, amount_params, translated_code_info)
-        t_targets, t_controls, t_anticontrols, t_c_controls, t_c_anticontrols = self.get_t_targets_controls(mod_qu_bits, q_controls, q_anticontrols, c_controls, c_anticontrols)
+        targets, t_controls, t_anticontrols, t_c_controls, t_c_anticontrols = self.get_t_targets_controls(mod_qu_bits, q_controls, q_anticontrols, c_controls, c_anticontrols)
 
         # Build the translation
         translation = ""
 
-        for i in range(power):
-            translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, {t_targets}{t_controls}{t_anticontrols}{t_c_controls}{t_c_anticontrols})\n"
+        if len(targets) > 1:
+            for id in targets:
+                t_targets = f"targets = [{id}]"
+                for i in range(power):
+                    translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, {t_targets}{t_controls}{t_anticontrols}{t_c_controls}{t_c_anticontrols})\n"
+        else:
+            t_targets = f"targets = {targets}"
+            for i in range(power):
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, {t_targets}{t_controls}{t_anticontrols}{t_c_controls}{t_c_anticontrols})\n"
 
         return translation[:-1]
 
