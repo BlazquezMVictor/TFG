@@ -690,7 +690,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["x"]
         t_gate = f"f\"{qsimov_gate}\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        
+        return translation
 
     def translate_y(self, line_number, line, translated_code_info):
         '''
@@ -705,8 +712,15 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["y"]
         t_gate = f"f\"{qsimov_gate}\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
-
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        
+        return translation
+    
     def translate_z(self, line_number, line, translated_code_info):
         '''
         UC:
@@ -720,7 +734,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["z"]
         t_gate = f"f\"{qsimov_gate}\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        
+        return translation
 
     def translate_h(self, line_number, line, translated_code_info):
         '''
@@ -735,7 +756,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["h"]
         t_gate = f"f\"{qsimov_gate}\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        
+        return translation
 
     def translate_s(self, line_number, line, translated_code_info):
         '''
@@ -750,16 +778,26 @@ class STDGateTranslator:
         t_gate = f"f\"{self.S_gate_name}\""
 
         if self.is_S_implemented:
-            return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+            translation = ""
+            if len(targets) > 1:
+                for id in targets:
+                    translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+            else:
+                translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
         
         else:
             self.is_S_implemented = True
             
             translated_code_info[translator_utils.KEY_NEW_MATRICES][self.S_gate_name] = add_new_gate_matrix(self.S_gate_name, self.S_matrix, aliases=self.S_gate_aliases)
 
-            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
-
-            return translation
+            translation = ""
+            if len(targets) > 1:
+                for id in targets:
+                    translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+            else:
+                translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+            
+        return translation
             
     def translate_sdg(self, line_number, line, translated_code_info):
         '''
@@ -774,16 +812,26 @@ class STDGateTranslator:
         t_gate = f"f\"{self.S_gate_name}-1\""
 
         if self.is_S_implemented:
-            return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+            translation = ""
+            if len(targets) > 1:
+                for id in targets:
+                    translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+            else:
+                translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
         
         else:
             self.is_S_implemented = True
 
             translated_code_info[translator_utils.KEY_NEW_MATRICES][self.S_gate_name] = add_new_gate_matrix(self.S_gate_name, self.S_matrix, aliases=self.S_gate_aliases)
 
-            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+            translation = ""
+            if len(targets) > 1:
+                for id in targets:
+                    translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+            else:
+                translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
 
-            return translation
+        return translation
 
     def translate_t(self, line_number, line, translated_code_info):
         '''
@@ -798,16 +846,26 @@ class STDGateTranslator:
         t_gate = f"f\"{self.T_gate_name}\""
 
         if self.is_T_implemented:
-            return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+            translation = ""
+            if len(targets) > 1:
+                for id in targets:
+                    translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+            else:
+                translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
         
         else:
             self.is_T_implemented = True
 
             translated_code_info[translator_utils.KEY_NEW_MATRICES][self.T_gate_name] = add_new_gate_matrix(self.T_gate_name, self.T_matrix, aliases=self.T_gate_aliases)
 
-            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+            translation = ""
+            if len(targets) > 1:
+                for id in targets:
+                    translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+            else:
+                translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
 
-            return translation
+        return translation
 
     def translate_tdg(self, line_number, line, translated_code_info):
         '''
@@ -822,16 +880,26 @@ class STDGateTranslator:
         t_gate = f"f\"{self.T_gate_name}-1\""
 
         if self.is_T_implemented:
-            return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+            translation = ""
+            if len(targets) > 1:
+                for id in targets:
+                    translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+            else:
+                translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
         
         else:
             self.is_T_implemented = True
 
             translated_code_info[translator_utils.KEY_NEW_MATRICES][self.T_gate_name] = add_new_gate_matrix(self.T_gate_name, self.T_matrix, aliases=self.T_gate_aliases)
 
-            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+            translation = ""
+            if len(targets) > 1:
+                for id in targets:
+                    translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+            else:
+                translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
 
-            return translation
+        return translation
 
     def translate_sx(self, line_number, line, translated_code_info):
         '''
@@ -846,7 +914,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["sx"]
         t_gate = f"f\"{qsimov_gate}\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        
+        return translation
 
     def translate_rx(self, line_number, line, translated_code_info):
         '''
@@ -862,7 +937,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["rx"]
         t_gate = f"f\"{qsimov_gate}({angle})\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        
+        return translation
 
     def translate_ry(self, line_number, line, translated_code_info):
         '''
@@ -878,7 +960,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["ry"]
         t_gate = f"f\"{qsimov_gate}({angle})\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        
+        return translation
 
     def translate_rz(self, line_number, line, translated_code_info):
         '''
@@ -894,7 +983,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["rz"]
         t_gate = f"f\"{qsimov_gate}({angle})\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        
+        return translation
 
     def translate_cx(self, line_number, line, translated_code_info):
         '''
@@ -911,7 +1007,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["cx"]
         t_gate = f"f\"{qsimov_gate}\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}], controls={controls})\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        
+        return translation
 
     def translate_cy(self, line_number, line, translated_code_info):
         '''
@@ -928,7 +1031,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["cy"]
         t_gate = f"f\"{qsimov_gate}\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}], controls={controls})\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        
+        return translation
 
     def translate_cz(self, line_number, line, translated_code_info):
         '''
@@ -945,8 +1055,15 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["cz"]
         t_gate = f"f\"{qsimov_gate}\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
-
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}], controls={controls})\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        
+        return translation
+    
     def translate_cp(self, line_number, line, translated_code_info):
         '''
         UC:
@@ -983,7 +1100,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["crx"]
         t_gate = f"f\"{qsimov_gate}({angle})\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}], controls={controls})\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        
+        return translation
 
     def translate_cry(self, line_number, line, translated_code_info):
         '''
@@ -1001,7 +1125,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["cry"]
         t_gate = f"f\"{qsimov_gate}({angle})\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}], controls={controls})\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        
+        return translation
 
     def translate_crz(self, line_number, line, translated_code_info):
         '''
@@ -1019,7 +1150,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["crz"]
         t_gate = f"f\"{qsimov_gate}({angle})\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}], controls={controls})\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        
+        return translation
 
     def translate_ch(self, line_number, line, translated_code_info):
         '''
@@ -1036,7 +1174,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["ch"]
         t_gate = f"f\"{qsimov_gate}\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}], controls={controls})\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        
+        return translation
 
     def translate_swap(self, line_number, line, translated_code_info):
         '''
@@ -1074,7 +1219,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["ccx"]
         t_gate = f"f\"{qsimov_gate}\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}], controls={controls})\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets}, controls={controls})"
+        
+        return translation
 
     def translate_cswap(self, line_number, line, translated_code_info):
         '''
@@ -1140,7 +1292,14 @@ class STDGateTranslator:
         qsimov_gate = stdgates_open_to_qsimov["U"]
         t_gate = f"f\"{qsimov_gate}({angle_1}, {angle_2}, {angle_3})\""
 
-        return f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        translation = ""
+        if len(targets) > 1:
+            for id in targets:
+                translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets=[{id}])\n"
+        else:
+            translation = f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, targets={targets})"
+        
+        return translation
 
     def translate_gphase(self, line_number, line, translated_code_info):
         raise NotImplementedError("The 'gphase' gate is not implemented yet")
