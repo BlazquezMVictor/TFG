@@ -1620,7 +1620,7 @@ class GateOperationTranslator:
                 for i in range(power):
                     translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, {t_targets}{t_controls}{t_anticontrols}{t_c_controls}{t_c_anticontrols})\n"
         else:
-            t_targets = f"targets = {targets}"
+            t_targets = f"targets = [{targets[0]}]"
             for i in range(power):
                 translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, {t_targets}{t_controls}{t_anticontrols}{t_c_controls}{t_c_anticontrols})\n"
 
