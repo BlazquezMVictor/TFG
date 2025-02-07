@@ -1552,15 +1552,16 @@ class GateOperationTranslator:
         return t_gate
 
     def get_t_targets_controls(self, mod_qu_bits, q_controls, q_anticontrols, c_controls, c_anticontrols):
-        qubits = []
-        for qubit in mod_qu_bits:
-            qubits += qubit[0]
+        # qubits = []
+        # for qubit in mod_qu_bits:
+        #     qubits += qubit[0]
 
-        targets = set(qubits) - set(q_controls)
-        targets -= set(q_anticontrols)
-        targets -= set(c_controls)
-        targets -= set(c_anticontrols)
-        targets = list(targets)
+        # targets = set(qubits) - set(q_controls)
+        # targets -= set(q_anticontrols)
+        # targets -= set(c_controls)
+        # targets -= set(c_anticontrols)
+        # targets = list(targets)
+        targets = mod_qu_bits[-1][0]
 
         # In case we are calling a custom function, we need to rewrite the controls and anticontrols using their ids
         if TranslatorUtils.is_custom_def:
@@ -1616,11 +1617,11 @@ class GateOperationTranslator:
 
         if len(targets) > 1:
             for id in targets:
-                t_targets = f"targets = [{id}]"
+                t_targets = f"targets=[{id}]"
                 for i in range(power):
                     translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, {t_targets}{t_controls}{t_anticontrols}{t_c_controls}{t_c_anticontrols})\n"
         else:
-            t_targets = f"targets = [{targets[0]}]"
+            t_targets = f"targets=[{targets[0]}]"
             for i in range(power):
                 translation += f"{TranslatorUtils.QCircuit_name}.add_operation({t_gate}, {t_targets}{t_controls}{t_anticontrols}{t_c_controls}{t_c_anticontrols})\n"
 
